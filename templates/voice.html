@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Bilingual Voice Coach — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-warning text-warning fs-7 mb-2">
+                    <i class="bi bi-mic-fill"></i> Hindi & English Spoken AI Coach
+                </div>
+                <h2 class="fw-bold text-white">Bilingual Movement & Sports Voice Coach</h2>
+                <p class="text-secondary small">
+                    Ask questions naturally in Hindi, Hinglish, or English. Get instant spoken technical advice powered by Ollama AI with Gemini cloud fallback.
+                </p>
+            </div>
+
+            <!-- Voice Card Container -->
+            <div class="bg-kinesis-card p-4 p-md-5 shadow-lg">
+
+                <!-- Language Selector & AI Engine State -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="text-secondary small fw-semibold">Spoken Language:</label>
+                        <select id="voiceLangSelect" class="form-select form-select-sm bg-dark text-warning border-secondary" style="width: auto;">
+                            <option value="en-IN" selected>English (India / Global)</option>
+                            <option value="hi-IN">Hindi / Hinglish (हिंदी)</option>
+                        </select>
+                    </div>
+                    <span class="badge bg-dark border border-secondary text-secondary">
+                        <i class="bi bi-shield-check text-success me-1"></i> Privacy-First
+                    </span>
+                </div>
+
+                <!-- Live Conversation Stream -->
+                <div id="voiceChatLog" class="p-3 bg-dark rounded-4 border border-secondary mb-4 overflow-auto" style="height: 320px;">
+                    <!-- Initial Welcome Message from Coach -->
+                    <div class="d-flex mb-3 justify-content-start">
+                        <div class="p-3 rounded-4 bg-dark border border-secondary text-light" style="max-width: 80%;">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-activity text-neon-green"></i>
+                                <strong class="fs-8">Kinesis Voice Coach</strong>
+                            </div>
+                            <div>
+                                Namaste! I'm your Kinesis Voice Coach. You can ask: <em>"Mera pull shot kaisa tha?"</em>, <em>"How can I improve my dribbling balance?"</em>, or <em>"Suggest post-workout nutrition."</em> Click the microphone to start!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animated Sound Wave (Hidden by default) -->
+                <div id="voiceWave" class="voice-wave mb-3 d-none">
+                    <div class="voice-wave-bar"></div>
+                    <div class="voice-wave-bar"></div>
+                    <div class="voice-wave-bar"></div>
+                    <div class="voice-wave-bar"></div>
+                    <div class="voice-wave-bar"></div>
+                </div>
+
+                <!-- Microphone Action Center -->
+                <div class="text-center mb-3">
+                    <button id="voiceRecordBtn" class="btn btn-neon-cyan btn-lg rounded-circle p-4 shadow-lg mb-2" style="width: 80px; height: 80px;" onclick="window.voiceCoach.toggleRecording()">
+                        <i class="bi bi-mic-fill fs-2" id="voiceMicIcon"></i>
+                    </button>
+                    <div id="voiceStatusText" class="text-secondary small fw-semibold">Click microphone to ask your coach</div>
+                </div>
+
+                <!-- Text Input Fallback -->
+                <div class="input-group">
+                    <input type="text" id="textFallbackInput" class="form-control bg-dark text-light border-secondary" placeholder="Or type your fitness / sports question here...">
+                    <button class="btn btn-outline-light px-4" type="button" onclick="handleTextSubmit()">Send</button>
+                </div>
+
+            </div>
+
+            <!-- Sample Query Prompts -->
+            <div class="mt-4">
+                <span class="fs-8 text-secondary fw-bold text-uppercase d-block mb-2">Try Asking:</span>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-glass rounded-pill" onclick="sendQuickPrompt('Mera pull shot kaisa tha?')">"Mera pull shot kaisa tha?"</button>
+                    <button class="btn btn-sm btn-glass rounded-pill" onclick="sendQuickPrompt('How do I prevent knee pain in squats?')">"How do I prevent knee pain in squats?"</button>
+                    <button class="btn btn-sm btn-glass rounded-pill" onclick="sendQuickPrompt('What is the best way to improve football agility?')">"How to improve football agility?"</button>
+                    <button class="btn btn-sm btn-glass rounded-pill" onclick="sendQuickPrompt('Diet me protein source kya hona chahiye?')">"Diet me protein sources?"</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.voiceCoach = new KinesisVoiceCoach();
+
+        const input = document.getElementById('textFallbackInput');
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleTextSubmit();
+            });
+        }
+    });
+
+    function handleTextSubmit() {
+        const input = document.getElementById('textFallbackInput');
+        const query = input.value.trim();
+        if (!query) return;
+        input.value = '';
+        window.voiceCoach.appendMessage('user', query);
+        window.voiceCoach.sendToAICoach(query);
+    }
+
+    function sendQuickPrompt(text) {
+        window.voiceCoach.appendMessage('user', text);
+        window.voiceCoach.sendToAICoach(text);
+    }
+</script>
+{% endblock %}

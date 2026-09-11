@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Football Training Center — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('sports.sports_hub') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-cyan-glow text-neon-cyan fs-8 mb-1">
+                <span>⚽ Football Intelligence</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">Football Training Modules</h2>
+        </div>
+    </div>
+
+    <!-- Drills Grid -->
+    <div class="row g-4 mb-5">
+        <!-- 1. Shooting Technique -->
+        <div class="col-md-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between border-cyan-glow">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🎯</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger">Technique /100</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Shooting Technique</h4>
+                    <p class="text-secondary small mb-3">
+                        Pose analysis of plant foot placement, knee flexion, hip power rotation, torso lean, and kicking follow-through.
+                    </p>
+                    <ul class="list-unstyled fs-8 text-secondary ps-1 mb-3">
+                        <li><i class="bi bi-check2 text-neon-cyan"></i> Plant Foot Alignment</li>
+                        <li><i class="bi bi-check2 text-neon-cyan"></i> Torso Backward Lean Check</li>
+                        <li><i class="bi bi-check2 text-neon-cyan"></i> Complete Follow-through Arc</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('sports.football_shooting') }}" class="btn btn-neon-cyan w-100 rounded-pill fw-bold">Launch Shooting Drill</a>
+            </div>
+        </div>
+
+        <!-- 2. Dribbling & Close Control -->
+        <div class="col-md-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">⚡</span>
+                        <span class="badge bg-warning-subtle text-warning border border-warning">Pose-based</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Dribbling & Agility</h4>
+                    <p class="text-secondary small mb-3">
+                        Analyzes low center-of-gravity shifts, rapid directional pivots, cadence, and posture balance without requiring ball sensors.
+                    </p>
+                    <ul class="list-unstyled fs-8 text-secondary ps-1 mb-3">
+                        <li><i class="bi bi-check2 text-neon-green"></i> Center of Mass Stability</li>
+                        <li><i class="bi bi-check2 text-neon-green"></i> Rapid Direction Change Prep</li>
+                        <li><i class="bi bi-check2 text-neon-green"></i> Low-Center-of-Gravity Index</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('sports.football_dribbling') }}" class="btn btn-neon-green w-100 rounded-pill fw-bold text-dark">Launch Dribbling Drill</a>
+            </div>
+        </div>
+
+        <!-- 3. Agility & Reaction -->
+        <div class="col-md-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🏃‍♂️</span>
+                        <span class="badge bg-info-subtle text-info border border-info">Speed & Reaction</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Agility Drills</h4>
+                    <p class="text-secondary small mb-3">
+                        Side shuffles, lateral sprints, deceleration stability, and reaction timer tracking for wingers and midfielders.
+                    </p>
+                    <ul class="list-unstyled fs-8 text-secondary ps-1 mb-3">
+                        <li><i class="bi bi-check2 text-info"></i> Reaction & Movement Time</li>
+                        <li><i class="bi bi-check2 text-info"></i> Lateral Movement Symmetry</li>
+                        <li><i class="bi bi-check2 text-info"></i> Deceleration Body Control</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('sports.football_agility') }}" class="btn btn-outline-light w-100 rounded-pill fw-bold">Launch Agility Drill</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Style Inspiration Coaching Guide -->
+    <div class="bg-glass p-4 rounded-4 border border-secondary-subtle">
+        <h4 class="fw-bold text-white mb-2"><i class="bi bi-stars text-neon-cyan me-2"></i> Player-Style Inspired Technical Coaching</h4>
+        <p class="text-secondary small mb-4">
+            Select a playing philosophy to receive targeted biomechanical tips. <em>(Note: Coaching provides technique-inspired principles, not guaranteed player emulation).</em>
+        </p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="bg-dark p-3 rounded-3 h-100 border border-secondary">
+                    <h6 class="fw-bold text-neon-cyan mb-1">Lionel Messi-inspired Close Control</h6>
+                    <p class="fs-8 text-secondary mb-0">Emphasizes low center of gravity, micro-touches, rapid feints, and instant short-burst acceleration.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-dark p-3 rounded-3 h-100 border border-secondary">
+                    <h6 class="fw-bold text-neon-green mb-1">Explosive Winger Principles</h6>
+                    <p class="fs-8 text-secondary mb-0">Focuses on high-speed directional changes, forward knee drive, and rapid transition from sprint to stop.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-dark p-3 rounded-3 h-100 border border-secondary">
+                    <h6 class="fw-bold text-warning mb-1">Finishing & Power Focus</h6>
+                    <p class="fs-8 text-secondary mb-0">Analyzes firm plant foot locking, optimal torso counter-balance, and high-velocity follow-through extension.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

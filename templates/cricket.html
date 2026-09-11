@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Cricket Biomechanics Center — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('sports.sports_hub') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-green-glow text-neon-green fs-8 mb-1">
+                <span>🏏 Cricket Biomechanics</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">Cricket Training Hub</h2>
+        </div>
+    </div>
+
+    <!-- Drills Grid -->
+    <div class="row g-4 mb-5">
+        <!-- 1. Pull Shot -->
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between border-cyan-glow">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">⚡</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger">Cross-Bat Shot</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Pull Shot Analysis</h4>
+                    <p class="text-secondary small mb-3">
+                        Evaluates back-foot transfer, hip rotation, shoulder axis rotation, head stability, and high follow-through.
+                    </p>
+                    <div class="bg-dark p-2 rounded-3 small text-secondary mb-3">
+                        <div class="d-flex justify-content-between"><span>Weight Transfer:</span> <strong class="text-neon-cyan">Back Foot</strong></div>
+                        <div class="d-flex justify-content-between"><span>Head Stability:</span> <strong class="text-neon-green">Eyes Level</strong></div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_pull_shot') }}" class="btn btn-neon-cyan w-100 rounded-pill fw-bold">Analyze Pull Shot</a>
+            </div>
+        </div>
+
+        <!-- 2. Cover Drive -->
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between border-cyan-glow">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🏏</span>
+                        <span class="badge bg-success-subtle text-success border border-success">Front-Foot Drive</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Cover Drive</h4>
+                    <p class="text-secondary small mb-3">
+                        Tracks front-foot stride, head-over-ball alignment, front knee flexion, shoulder dip, and Kohli-inspired coaching.
+                    </p>
+                    <div class="bg-dark p-2 rounded-3 small text-secondary mb-3">
+                        <div class="d-flex justify-content-between"><span>Front Knee Flexion:</span> <strong class="text-neon-green">85° – 110°</strong></div>
+                        <div class="d-flex justify-content-between"><span>Head Position:</span> <strong class="text-neon-cyan">Over Ball Line</strong></div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_cover_drive') }}" class="btn btn-neon-green w-100 rounded-pill fw-bold text-dark">Analyze Cover Drive</a>
+            </div>
+        </div>
+
+        <!-- 3. Straight Drive -->
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🎯</span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary">Vertical Bat</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Straight Drive</h4>
+                    <p class="text-secondary small mb-3">
+                        Analyzes vertical bat presentation, balanced follow-through, front-elbow high drive, and head stability.
+                    </p>
+                    <div class="bg-dark p-2 rounded-3 small text-secondary mb-3">
+                        <div class="d-flex justify-content-between"><span>Elbow Position:</span> <strong class="text-neon-cyan">High & Dominant</strong></div>
+                        <div class="d-flex justify-content-between"><span>Balance:</span> <strong class="text-neon-green">Centred</strong></div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_straight_drive') }}" class="btn btn-outline-light w-100 rounded-pill fw-bold">Analyze Straight Drive</a>
+            </div>
+        </div>
+
+        <!-- 4. Bowling Action -->
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🚀</span>
+                        <span class="badge bg-warning-subtle text-warning border border-warning">Pace & Spin</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Bowling Action & Safety</h4>
+                    <p class="text-secondary small mb-3">
+                        Monitors run-up posture, front arm pull, front-leg brace stability, and lower back hyperextension risks.
+                    </p>
+                    <div class="bg-dark p-2 rounded-3 small text-secondary mb-3">
+                        <div class="d-flex justify-content-between"><span>Front Leg Brace:</span> <strong class="text-neon-green">> 160°</strong></div>
+                        <div class="d-flex justify-content-between"><span>Lumbar Posture:</span> <strong class="text-warning">Safe Arc</strong></div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_bowling') }}" class="btn btn-outline-light w-100 rounded-pill fw-bold">Analyze Bowling Action</a>
+            </div>
+        </div>
+
+        <!-- 5. Batting Stance -->
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🧍‍♂️</span>
+                        <span class="badge bg-info-subtle text-info border border-info">Setup & Stance</span>
+                    </div>
+                    <h4 class="fw-bold text-white">Batting Stance Readiness</h4>
+                    <p class="text-secondary small mb-3">
+                        Static analysis of base width, relaxed knee flexion, side-on shoulder alignment, and head positioning.
+                    </p>
+                    <div class="bg-dark p-2 rounded-3 small text-secondary mb-3">
+                        <div class="d-flex justify-content-between"><span>Base Width:</span> <strong class="text-neon-cyan">Shoulder Width</strong></div>
+                        <div class="d-flex justify-content-between"><span>Shoulder Line:</span> <strong class="text-neon-green">Side-on Target</strong></div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_batting_stance') }}" class="btn btn-outline-light w-100 rounded-pill fw-bold">Check Batting Stance</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

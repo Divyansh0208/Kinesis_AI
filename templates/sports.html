@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Sports Center — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Sports Hub Header -->
+    <div class="text-center max-w-700 mx-auto mb-5">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-cyan-glow text-neon-cyan fs-7 mb-2">
+            <i class="bi bi-trophy-fill"></i> Elite Sports Biomechanics
+        </div>
+        <h1 class="fw-bold text-white mb-2">Kinesis Sports Center</h1>
+        <p class="text-secondary">Turn your webcam into an AI sports analyst. Train shooting, dribbling, cricket batting shots, bowling mechanics, and agility with deterministic kinematic analysis.</p>
+    </div>
+
+    <!-- Sports Modules Grid -->
+    <div class="row g-4 justify-content-center mb-5">
+        <!-- 1. Football Module -->
+        <div class="col-lg-6">
+            <div class="bg-kinesis-card h-100 p-4 p-md-5 d-flex flex-column justify-content-between border-cyan-glow">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="display-4">⚽</span>
+                        <span class="badge bg-neon-cyan text-dark fw-bold px-3 py-2">Football Intelligence</span>
+                    </div>
+                    <h3 class="fw-bold text-white mb-2">Football Training Center</h3>
+                    <p class="text-secondary mb-4">
+                        Master shooting technique (plant foot stability, knee angle, hip rotation, torso lean), pose-based dribbling agility, and reaction drills with style-inspired coaching.
+                    </p>
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-cyan"></i>
+                            <span>Shooting Biomechanics Score /100 (Plant Foot, Follow-through)</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-cyan"></i>
+                            <span>Pose-based Dribbling & Center-of-Mass Agility</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-cyan"></i>
+                            <span>Player-Style Inspiration: Messi-inspired close control & explosive winger</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.football_hub') }}" class="btn btn-neon-cyan btn-lg rounded-pill fw-bold w-100">
+                    Enter Football Hub <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. Cricket Module -->
+        <div class="col-lg-6">
+            <div class="bg-kinesis-card h-100 p-4 p-md-5 d-flex flex-column justify-content-between border-cyan-glow">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="display-4">🏏</span>
+                        <span class="badge bg-neon-green text-dark fw-bold px-3 py-2">Cricket Biomechanics</span>
+                    </div>
+                    <h3 class="fw-bold text-white mb-2">Cricket Training Center</h3>
+                    <p class="text-secondary mb-4">
+                        Analyze batting kinematics from standard webcam video. Evaluates head stability, front/back foot weight transfer, torso rotation, and bowling lumbar posture.
+                    </p>
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-green"></i>
+                            <span>Pull Shot & Cover Drive scoring (0-100 with component breakdowns)</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-green"></i>
+                            <span>Virat Kohli-inspired technical principles mode for cover drive</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-light small">
+                            <i class="bi bi-check-circle-fill text-neon-green"></i>
+                            <span>Bowling action safety, shoulder rotation, and front-leg brace analysis</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('sports.cricket_hub') }}" class="btn btn-neon-green btn-lg rounded-pill fw-bold w-100 text-dark">
+                    Enter Cricket Hub <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Sports Workout Generator Banner -->
+    <div class="bg-glass p-4 p-md-5 rounded-4 border border-secondary-subtle">
+        <div class="row align-items-center gy-3">
+            <div class="col-md-8">
+                <span class="badge bg-warning text-dark fw-bold mb-2">AI Plan Generator</span>
+                <h3 class="fw-bold text-white">4-Week Position-Specific Training Planner</h3>
+                <p class="text-secondary mb-0">
+                    Select your sport (Football or Cricket), playing position (Forward, Midfielder, Batter, Bowler, etc.), and goal (Speed, Agility, Technique) to generate a complete 4-week structured regimen.
+                </p>
+            </div>
+            <div class="col-md-4 text-center text-md-end">
+                <a href="{{ url_for('sports.sports_workout_generator') }}" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
+                    Generate Plan <i class="bi bi-stars ms-1 text-warning"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

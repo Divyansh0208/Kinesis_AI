@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Athlete Dashboard — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-3 py-md-4">
+
+    <!-- Athlete Header & XP Level Bar -->
+    <div class="bg-glass p-4 rounded-4 border border-secondary-subtle mb-4">
+        <div class="row align-items-center gy-3">
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-dark border border-cyan-glow p-3 text-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-person-fill fs-2 text-neon-cyan"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="fw-bold text-white mb-0">{{ user.full_name or user.username if user else "Demo Athlete" }}</h3>
+                            <span class="badge bg-neon-cyan text-dark fw-bold">Level {{ level_info.level if level_info else 1 }}</span>
+                            <span class="badge bg-dark-subtle border border-secondary text-secondary">{{ level_info.title if level_info else "Rookie" }}</span>
+                        </div>
+                        <div class="text-secondary small mt-1">
+                            <i class="bi bi-fire text-neon-orange me-1"></i> Streak: <strong>{{ user.streak_days if user else 1 }} Days</strong> |
+                            <i class="bi bi-shield-check text-neon-green ms-2 me-1"></i> Form Quality Focus
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="text-end small text-secondary mb-1">
+                    XP: <strong class="text-white">{{ user.xp if user else 120 }}</strong> / {{ level_info.xp_next if level_info else 500 }} XP
+                </div>
+                <div class="progress bg-dark border border-secondary-subtle" style="height: 12px; border-radius: 6px;">
+                    <div class="progress-bar bg-neon-cyan" role="progressbar" style="width: {{ level_info.progress_pct if level_info else 25 }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="bg-kinesis-card p-3 p-md-4 h-100">
+                <div class="text-secondary small fw-semibold">Quality Reps</div>
+                <div class="fs-2 fw-bold text-neon-green mt-1 font-mono">{{ total_quality_reps or 42 }}</div>
+                <div class="text-muted fs-8">Out of {{ total_reps or 48 }} Total Reps</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="bg-kinesis-card p-3 p-md-4 h-100">
+                <div class="text-secondary small fw-semibold">Avg Fitness Form</div>
+                <div class="fs-2 fw-bold text-neon-cyan mt-1 font-mono">{{ avg_fitness_score or 84.5 }}<span class="fs-6 text-muted">/100</span></div>
+                <div class="text-muted fs-8">Posture & Depth rating</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="bg-kinesis-card p-3 p-md-4 h-100">
+                <div class="text-secondary small fw-semibold">Avg Sports Score</div>
+                <div class="fs-2 fw-bold text-warning mt-1 font-mono">{{ avg_sports_score or 81.0 }}<span class="fs-6 text-muted">/100</span></div>
+                <div class="text-muted fs-8">Football & Cricket Biomechanics</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="bg-kinesis-card p-3 p-md-4 h-100">
+                <div class="text-secondary small fw-semibold">Movement Risk Index</div>
+                <div class="fs-2 fw-bold text-neon-green mt-1 font-mono">LOW</div>
+                <div class="text-muted fs-8">Fatigue & alignment normal</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Form Trend Line Chart -->
+        <div class="col-lg-7">
+            <div class="bg-kinesis-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-graph-up text-neon-cyan me-2"></i> Form Score Trend</h5>
+                    <span class="badge bg-dark border border-secondary text-secondary">Last 7 Sessions</span>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="fitnessProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sports Radar Chart -->
+        <div class="col-lg-5">
+            <div class="bg-kinesis-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-pie-chart text-neon-green me-2"></i> Sports Biomechanics Radar</h5>
+                    <span class="badge bg-dark border border-secondary text-secondary">Technique /100</span>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="sportsSkillRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Sessions History -->
+    <div class="row g-4 mb-4">
+        <!-- Fitness Workouts -->
+        <div class="col-lg-6">
+            <div class="bg-kinesis-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-heart-pulse text-danger me-2"></i> Recent Fitness Sessions</h5>
+                    <a href="{{ url_for('main.workout') }}" class="btn btn-sm btn-outline-light rounded-pill">New Workout</a>
+                </div>
+                {% if workouts %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary fs-8">
+                                    <th>EXERCISE</th>
+                                    <th>REPS (QUALITY)</th>
+                                    <th>SCORE</th>
+                                    <th>FATIGUE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for w in workouts %}
+                                <tr>
+                                    <td class="fw-semibold text-capitalize text-white">{{ w.exercise_type.replace('_', ' ') }}</td>
+                                    <td>{{ w.reps }} <span class="text-neon-green">({{ w.quality_reps }})</span></td>
+                                    <td><span class="badge bg-dark border border-cyan-glow text-neon-cyan">{{ w.form_score|round|int }}/100</span></td>
+                                    <td><span class="badge bg-secondary-subtle text-light">{{ w.fatigue_level }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-secondary small mb-0">No workout records yet. Select an exercise from the Fitness Hub to start training!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sports Sessions -->
+        <div class="col-lg-6">
+            <div class="bg-kinesis-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-trophy text-warning me-2"></i> Sports Drills & Technique</h5>
+                    <a href="{{ url_for('sports.sports_hub') }}" class="btn btn-sm btn-neon-cyan rounded-pill">Sports Hub</a>
+                </div>
+                {% if sports_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary fs-8">
+                                    <th>SPORT & SKILL</th>
+                                    <th>STYLE INSPIRATION</th>
+                                    <th>SCORE</th>
+                                    <th>RISK</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in sports_sessions %}
+                                <tr>
+                                    <td class="fw-semibold text-capitalize text-white">{{ s.sport }} — {{ s.sport_skill.replace('_', ' ') }}</td>
+                                    <td class="small text-secondary">{{ s.style_inspiration or "Standard" }}</td>
+                                    <td><span class="badge bg-dark border border-success text-neon-green">{{ s.score|round|int }}/100</span></td>
+                                    <td><span class="badge bg-secondary-subtle text-light">{{ s.risk_level }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-secondary small mb-0">No sports sessions recorded yet. Launch Football Shooting or Cricket Batting analysis to build your score!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Gamification Badges Showcase -->
+    <div class="bg-kinesis-card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold text-white mb-0"><i class="bi bi-award-fill text-warning me-2"></i> Achievements & Badges</h5>
+                <span class="text-secondary fs-8">Earn XP and badges by demonstrating consistent movement quality.</span>
+            </div>
+            <span class="badge bg-dark border border-warning text-warning">{{ achievements|length }} Unlocked</span>
+        </div>
+
+        <div class="row g-3">
+            {% set earned_ids = achievements|map(attribute='badge_id')|list %}
+            {% set sample_badges = [
+                {'id': 'first_perfect_rep', 'name': 'First Perfect Rep', 'icon': '⭐', 'desc': 'Score 95+ on a single rep', 'xp': 50},
+                {'id': 'ten_quality_reps', 'name': '10 Quality Reps', 'icon': '🔥', 'desc': 'Complete 10 quality reps in a session', 'xp': 100},
+                {'id': 'football_beginner', 'name': 'Football Beginner', 'icon': '⚽', 'desc': 'Complete first football drill', 'xp': 75},
+                {'id': 'cricket_technique', 'name': 'Cricket Technique', 'icon': '🏏', 'desc': 'Score 80+ on a cricket drill', 'xp': 100},
+                {'id': 'seven_day_streak', 'name': '7 Day Streak', 'icon': '⚡', 'desc': 'Train for 7 consecutive days', 'xp': 200},
+                {'id': 'form_master', 'name': 'Form Master', 'icon': '🏆', 'desc': 'Average 90+ form score', 'xp': 300}
+            ] %}
+
+            {% for b in sample_badges %}
+                {% set is_unlocked = b.id in earned_ids %}
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="badge-card {{ 'unlocked' if is_unlocked else 'locked' }}">
+                        <div class="badge-icon-lg">{{ b.icon }}</div>
+                        <div class="fw-bold small text-white">{{ b.name }}</div>
+                        <div class="fs-8 text-secondary mt-1">{{ b.desc }}</div>
+                        <div class="badge bg-dark border border-secondary text-warning fs-8 mt-2">+{{ b.xp }} XP</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

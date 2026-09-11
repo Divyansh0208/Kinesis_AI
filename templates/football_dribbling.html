@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Football Dribbling & Agility — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 bg-glass p-3 rounded-4 border border-secondary-subtle">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('sports.football_hub') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="fw-bold text-white mb-0">Pose-Based Dribbling Analysis</h4>
+                    <span class="badge bg-warning-subtle text-warning border border-warning fs-8">Pose-Based</span>
+                </div>
+                <span class="text-secondary small">Tracks low center of gravity, rapid body feints, and direction-change cadence</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-dark px-3 py-1 rounded-pill border border-secondary text-light font-mono fw-bold">
+                <i class="bi bi-stopwatch text-neon-green me-1"></i> <span id="sessionTimer">00:00</span>
+            </div>
+            <button class="btn btn-danger btn-sm rounded-pill px-4 fw-bold" onclick="window.fbCtrl.finishSession()">
+                Finish Drill
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="webcam-container">
+                <video id="webcamVideo" class="webcam-video" playsinline autoplay muted></video>
+                <canvas id="skeletonCanvas" class="skeleton-canvas"></canvas>
+
+                <div id="calibrationOverlay" class="calibration-overlay">
+                    <div class="calibration-box"></div>
+                    <h4 class="fw-bold text-white mb-1">Calibration</h4>
+                    <p class="calibration-status-text fw-bold text-neon-green mb-3">Position full body inside camera</p>
+                    <div class="progress w-50 bg-dark border border-secondary" style="height: 10px;">
+                        <div class="calibration-progress-bar progress-bar bg-neon-green" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="hud-overlay">
+                    <div class="d-flex justify-content-between">
+                        <div class="hud-card">
+                            <div class="text-secondary fs-8 fw-bold">DRIBBLING SCORE</div>
+                            <div class="hud-score-badge text-neon-green"><span id="footballScoreVal">0</span><span class="fs-6 text-secondary">/100</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-3 h-100">
+                <div class="bg-kinesis-card p-4">
+                    <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-bar-chart-fill text-neon-green"></i> Agility Metrics Breakdown
+                    </h6>
+                    <div id="metricBreakdown" class="mb-3">
+                        <div class="text-secondary small">Perform lateral steps and direction pivots.</div>
+                    </div>
+                </div>
+
+                <div class="bg-kinesis-card p-4 flex-grow-1">
+                    <h6 class="fw-bold text-white mb-2 fs-7"><i class="bi bi-broadcast text-warning me-1"></i> Real-time Dribble Guidance</h6>
+                    <div id="footballCorrections" class="mb-2"></div>
+                    <div id="footballPositives"></div>
+                </div>
+
+                <div id="styleCoachingTips" class="bg-glass p-3 rounded-4 border border-secondary-subtle"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Summary Modal -->
+<div class="modal fade" id="sportsSummaryModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-kinesis-card text-light border border-neon-green p-4">
+            <div class="text-center mb-4">
+                <span class="display-3 text-neon-green"><i class="bi bi-check-circle-fill"></i></span>
+                <h3 class="fw-bold text-white mt-2">Dribbling Drill Complete!</h3>
+                <p class="text-secondary small">Pose-based agility & control metrics recorded.</p>
+            </div>
+
+            <div class="row g-2 mb-4 text-center">
+                <div class="col-6">
+                    <div class="bg-dark p-3 rounded-3">
+                        <div class="text-secondary fs-8">DRIBBLING SCORE</div>
+                        <div id="summaryScore" class="fs-2 fw-bold text-neon-green">0/100</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="bg-dark p-3 rounded-3">
+                        <div class="text-secondary fs-8">DURATION</div>
+                        <div id="summaryDuration" class="fs-2 fw-bold text-white">0s</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center bg-dark p-3 rounded-3 mb-4">
+                <span class="text-secondary small">XP Earned:</span>
+                <div class="badge bg-neon-green text-dark fs-6 py-2 px-3" id="summaryXP">+0 XP</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-neon-green flex-grow-1 rounded-pill fw-bold text-dark">View Dashboard</a>
+                <a href="{{ url_for('sports.football_hub') }}" class="btn btn-outline-light rounded-pill px-3">Football Hub</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/pose.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calibration.js') }}"></script>
+<script src="{{ url_for('static', filename='js/football.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.fbCtrl = new FootballController({
+            skill: 'dribbling',
+            styleInspiration: 'technical_dribbler'
+        });
+        window.fbCtrl.init();
+    });
+</script>
+{% endblock %}

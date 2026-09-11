@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Yoga Postures Hub — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="text-center max-w-700 mx-auto mb-5">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-secondary text-neon-cyan fs-7 mb-2">
+            <i class="bi bi-yin-yang"></i> Mindful Movement & Flexibility
+        </div>
+        <h1 class="fw-bold text-white mb-2">Yoga Asana Posture Studio</h1>
+        <p class="text-secondary">Align your spine, open tight joints, and receive real-time postural guidance on essential yoga asanas using webcam pose estimation.</p>
+    </div>
+
+    <!-- Poses Grid -->
+    <div class="row g-4">
+        {% for key, pose in poses.items() %}
+        <div class="col-md-6 col-lg-4">
+            <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1">🧘</span>
+                        <span class="badge bg-dark border border-secondary text-neon-green">{{ pose.difficulty }}</span>
+                    </div>
+                    <h4 class="fw-bold text-white">{{ pose.name }}</h4>
+                    <span class="badge bg-secondary-subtle text-light mb-2">{{ pose.target }}</span>
+                    <p class="text-secondary small mb-3">{{ pose.description }}</p>
+                </div>
+                <a href="{{ url_for('main.yoga_pose_view', pose_key=key) }}" class="btn btn-outline-light rounded-pill w-100 fw-bold">
+                    Practice {{ pose.name.split('(')[0] }} <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

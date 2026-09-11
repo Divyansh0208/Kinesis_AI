@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pose.name }} — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 bg-glass p-3 rounded-4 border border-secondary-subtle">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('main.yoga') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h4 class="fw-bold text-white mb-0">{{ pose.name }}</h4>
+                <span class="text-secondary small">{{ pose.target }} | {{ pose.description }}</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-dark px-3 py-1 rounded-pill border border-secondary text-light font-mono fw-bold">
+                <i class="bi bi-stopwatch text-neon-green me-1"></i> <span id="sessionTimer">00:00</span>
+            </div>
+            <button class="btn btn-danger btn-sm rounded-pill px-4 fw-bold" onclick="finishYogaSession()">
+                Finish Asana
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="webcam-container">
+                <video id="webcamVideo" class="webcam-video" playsinline autoplay muted></video>
+                <canvas id="skeletonCanvas" class="skeleton-canvas"></canvas>
+
+                <div id="calibrationOverlay" class="calibration-overlay">
+                    <div class="calibration-box"></div>
+                    <h4 class="fw-bold text-white mb-1">Calibration</h4>
+                    <p class="calibration-status-text fw-bold text-neon-green mb-3">Position your full body inside the camera</p>
+                    <div class="progress w-50 bg-dark border border-secondary" style="height: 10px;">
+                        <div class="calibration-progress-bar progress-bar bg-neon-green" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="hud-overlay">
+                    <div class="d-flex justify-content-between">
+                        <div class="hud-card">
+                            <div class="text-secondary fs-8 fw-bold">ALIGNMENT SCORE</div>
+                            <div class="hud-score-badge text-neon-green"><span id="yogaScoreVal">0</span><span class="fs-6 text-secondary">/100</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-3 h-100">
+                <div class="bg-kinesis-card p-4">
+                    <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-yin-yang text-neon-green"></i> Postural Corrections
+                    </h6>
+                    <div id="yogaCorrections" class="mb-3">
+                        <div class="text-secondary small">Hold the posture to check joint angles and spine alignment.</div>
+                    </div>
+                </div>
+
+                <div class="bg-kinesis-card p-4 flex-grow-1">
+                    <h6 class="fw-bold text-white mb-2 fs-7"><i class="bi bi-check-circle text-neon-green me-1"></i> Alignment Strengths</h6>
+                    <div id="yogaPositives"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Finish Modal -->
+<div class="modal fade" id="yogaSummaryModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-kinesis-card text-light border border-neon-green p-4 text-center">
+            <span class="display-3 text-neon-green mb-2"><i class="bi bi-check-circle-fill"></i></span>
+            <h3 class="fw-bold text-white">Namaste! Asana Complete</h3>
+            <p class="text-secondary small">Great dedication to mindful posture alignment.</p>
+            <div class="bg-dark p-3 rounded-3 mb-4">
+                <div class="text-secondary fs-8">AVERAGE ALIGNMENT SCORE</div>
+                <div id="summaryScore" class="fs-2 fw-bold text-neon-green">0/100</div>
+            </div>
+            <a href="{{ url_for('main.yoga') }}" class="btn btn-neon-green rounded-pill fw-bold text-dark w-100">Return to Studio</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/pose.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calibration.js') }}"></script>
+<script>
+    let pipeline, calibration, isLive = false, startTime, timerInterval;
+    let scores = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const video = document.getElementById('webcamVideo');
+        const canvas = document.getElementById('skeletonCanvas');
+        const calOverlay = document.getElementById('calibrationOverlay');
+
+        pipeline = new KinesisPosePipeline(video, canvas, {
+            onResults: (landmarks) => {
+                if (!calibration.isCalibrated) {
+                    calibration.processFrame(landmarks);
+                    return;
+                }
+                if (!isLive) return;
+
+                const raw = landmarks.map(p => ({ x: p.x, y: p.y, z: p.z, visibility: p.visibility || 1.0 }));
+                fetch('/api/yoga/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pose: "{{ pose_key }}", landmarks: raw })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    const score = Math.round(d.score || 0);
+                    scores.push(score);
+                    document.getElementById('yogaScoreVal').textContent = score;
+
+                    const corr = document.getElementById('yogaCorrections');
+                    const pos = document.getElementById('yogaPositives');
+                    if (d.corrections && d.corrections.length > 0) {
+                        corr.innerHTML = d.corrections.map(c => `<div class="text-warning small mb-1"><i class="bi bi-exclamation-circle me-1"></i> ${c}</div>`).join('');
+                    } else {
+                        corr.innerHTML = `<div class="text-neon-green small"><i class="bi bi-check2"></i> Posture in optimal alignment!</div>`;
+                    }
+                    if (d.positives) {
+                        pos.innerHTML = d.positives.map(p => `<div class="text-neon-green small mb-1"><i class="bi bi-check-circle-fill me-1"></i> ${p}</div>`).join('');
+                    }
+                })
+                .catch(e => console.debug(e));
+            }
+        });
+
+        calibration = new KinesisCalibration(calOverlay, {
+            onCalibrationSuccess: () => {
+                isLive = true;
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const el = Math.floor((Date.now() - startTime) / 1000);
+                    document.getElementById('sessionTimer').textContent = `${String(Math.floor(el/60)).padStart(2,'0')}:${String(el%60).padStart(2,'0')}`;
+                }, 1000);
+            }
+        });
+
+        await pipeline.init();
+        await pipeline.start();
+        calibration.start();
+    });
+
+    function finishYogaSession() {
+        isLive = false;
+        clearInterval(timerInterval);
+        pipeline.stop();
+        const avg = scores.length > 0 ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 85;
+        document.getElementById('summaryScore').textContent = avg + '/100';
+        new bootstrap.Modal(document.getElementById('yogaSummaryModal')).show();
+    }
+</script>
+{% endblock %}

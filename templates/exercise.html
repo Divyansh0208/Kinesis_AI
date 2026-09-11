@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+
+    <!-- Top Exercise Header & Timer -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 bg-glass p-3 rounded-4 border border-secondary-subtle">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('main.workout') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2" title="Back to Hub">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h4 class="fw-bold text-white mb-0">{{ title }}</h4>
+                <span class="text-secondary small">{{ desc }}</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Fatigue Badge -->
+            <span id="fatigueBadge" class="badge rounded-pill bg-success px-3 py-2">Fatigue: LOW</span>
+            <!-- Session Timer -->
+            <div class="bg-dark px-3 py-2 rounded-pill border border-secondary text-light font-mono fw-bold">
+                <i class="bi bi-stopwatch text-neon-cyan me-1"></i> <span id="sessionTimer">00:00</span>
+            </div>
+            <!-- Finish Workout Button -->
+            <button id="finishWorkoutBtn" class="btn btn-danger btn-sm rounded-pill px-4 fw-bold" onclick="window.exerciseCtrl.finishSession()">
+                Finish Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Movement Risk Alert Banner (Hidden by default) -->
+    <div id="riskAlertBanner" class="alert alert-warning d-none border-0 shadow-sm mb-3">
+        <!-- Injected via exercise.js -->
+    </div>
+
+    <!-- Main Live Workspace Grid -->
+    <div class="row g-3">
+        <!-- Left: Webcam + HUD Overlay -->
+        <div class="col-lg-8">
+            <div class="webcam-container">
+                <!-- Video Element -->
+                <video id="webcamVideo" class="webcam-video" playsinline autoplay muted></video>
+                <!-- Canvas Overlay for Cyber Skeleton -->
+                <canvas id="skeletonCanvas" class="skeleton-canvas"></canvas>
+
+                <!-- Calibration Overlay (Shown initially) -->
+                <div id="calibrationOverlay" class="calibration-overlay">
+                    <div class="calibration-box"></div>
+                    <h4 class="fw-bold text-white mb-1">Pre-Workout Calibration</h4>
+                    <p class="calibration-status-text fw-bold text-neon-cyan mb-3">Stand where your full body is visible inside the box</p>
+                    <div class="progress w-50 bg-dark border border-secondary" style="height: 10px;">
+                        <div class="calibration-progress-bar progress-bar bg-neon-cyan" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Live In-Camera HUD Floating Metrics -->
+                <div class="hud-overlay">
+                    <!-- Top HUD: Reps & Quality -->
+                    <div class="d-flex justify-content-between">
+                        <div class="hud-card">
+                            <div class="text-secondary fs-8 fw-bold">REPS</div>
+                            <div id="repCounter" class="hud-score-badge text-white">0</div>
+                        </div>
+                        <div class="hud-card text-end">
+                            <div class="text-secondary fs-8 fw-bold">QUALITY REPS</div>
+                            <div id="qualityRepCounter" class="hud-score-badge text-neon-green">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom HUD: Form Score Dial -->
+                    <div class="d-flex justify-content-between align-items-end">
+                        <div class="hud-card w-100" style="max-width: 260px;">
+                            <div class="d-flex justify-content-between small text-secondary mb-1">
+                                <span>Form Quality</span>
+                                <span class="fw-bold text-white font-mono"><span id="formScoreValue">100</span>/100</span>
+                            </div>
+                            <div class="progress bg-dark" style="height: 8px;">
+                                <div id="formScoreBar" class="progress-bar bg-success" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Real-time Feedback & Biomechanics Panel -->
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-3 h-100">
+                <!-- Corrections Card -->
+                <div class="bg-kinesis-card p-4 flex-grow-1">
+                    <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-broadcast text-neon-cyan"></i> Live Biomechanical Feedback
+                    </h6>
+
+                    <div class="mb-3">
+                        <span class="fs-8 text-secondary fw-bold text-uppercase d-block mb-1">Postural Corrections</span>
+                        <div id="liveCorrections">
+                            <div class="text-secondary small italic">Perform repetitions to receive real-time posture adjustments.</div>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary my-3">
+
+                    <div>
+                        <span class="fs-8 text-secondary fw-bold text-uppercase d-block mb-1">Strengths & Form Points</span>
+                        <div id="livePositives">
+                            <div class="text-secondary small italic">Good alignment cues will appear here.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technique Guide Card -->
+                <div class="bg-kinesis-card p-3">
+                    <h6 class="fw-bold text-white mb-2 fs-7"><i class="bi bi-info-circle text-info me-1"></i> Quality Rep Rules</h6>
+                    <ul class="list-unstyled mb-0 fs-8 text-secondary ps-1">
+                        <li><i class="bi bi-check2 text-neon-green"></i> Reach required joint range of motion on each rep.</li>
+                        <li><i class="bi bi-check2 text-neon-green"></i> Maintain core engagement and avoid hip sagging.</li>
+                        <li><i class="bi bi-check2 text-neon-green"></i> Slower controlled tempo yields higher score & XP.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Session Summary Modal -->
+<div class="modal fade" id="summaryModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-kinesis-card text-light border border-cyan-glow p-4">
+            <div class="text-center mb-4">
+                <span class="display-3 text-neon-green"><i class="bi bi-check-circle-fill"></i></span>
+                <h3 class="fw-bold text-white mt-2">Workout Completed!</h3>
+                <p class="text-secondary small">Great work maintaining movement quality.</p>
+            </div>
+
+            <div class="row g-2 mb-4 text-center">
+                <div class="col-4">
+                    <div class="bg-dark p-3 rounded-3">
+                        <div class="text-secondary fs-8">TOTAL REPS</div>
+                        <div id="summaryReps" class="fs-3 fw-bold text-white">0</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="bg-dark p-3 rounded-3">
+                        <div class="text-secondary fs-8">QUALITY REPS</div>
+                        <div id="summaryQualityReps" class="fs-3 fw-bold text-neon-green">0</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="bg-dark p-3 rounded-3">
+                        <div class="text-secondary fs-8">FORM SCORE</div>
+                        <div id="summaryScore" class="fs-3 fw-bold text-neon-cyan">0/100</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center bg-dark p-3 rounded-3 mb-4">
+                <div>
+                    <span class="text-secondary fs-8 d-block">ESTIMATED BURN</span>
+                    <strong class="text-white"><span id="summaryCalories">0</span> kcal</strong>
+                </div>
+                <div class="badge bg-neon-cyan text-dark fs-6 py-2 px-3" id="summaryXP">+0 XP</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-neon-cyan flex-grow-1 rounded-pill fw-bold">View Dashboard</a>
+                <a href="{{ url_for('main.workout') }}" class="btn btn-outline-light rounded-pill px-3">Next Exercise</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- MediaPipe dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<!-- Kinesis Exercise Scripts -->
+<script src="{{ url_for('static', filename='js/pose.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calibration.js') }}"></script>
+<script src="{{ url_for('static', filename='js/exercise.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.exerciseCtrl = new FitnessExerciseController({
+            exerciseType: "{{ exercise_type }}"
+        });
+        window.exerciseCtrl.init();
+    });
+</script>
+{% endblock %}

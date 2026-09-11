@@ -1,0 +1,305 @@
+/* ==========================================================================
+   Kinesis AI — Modern Movement Intelligence Styling
+   SIH 2026 Edition | Theme: Fitness & Sports
+   ========================================================================== */
+
+:root {
+    --kinesis-bg-dark: #0a0e17;
+    --kinesis-bg-card: #121824;
+    --kinesis-bg-card-hover: #182233;
+    --kinesis-nav: #080c14;
+    --neon-cyan: #00f2fe;
+    --neon-cyan-glow: rgba(0, 242, 254, 0.35);
+    --neon-green: #00ff87;
+    --neon-green-glow: rgba(0, 255, 135, 0.35);
+    --neon-orange: #ff9900;
+    --neon-red: #ff3366;
+    --neon-purple: #7928ca;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-cyan-glow: rgba(0, 242, 254, 0.4);
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--kinesis-bg-dark);
+    color: #e2e8f0;
+    overflow-x: hidden;
+}
+
+code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Backgrounds & Gradients */
+.bg-kinesis-dark {
+    background-color: var(--kinesis-bg-dark) !important;
+}
+
+.bg-kinesis-nav {
+    background-color: var(--kinesis-nav) !important;
+    backdrop-filter: blur(12px);
+}
+
+.bg-kinesis-card {
+    background-color: var(--kinesis-bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    transition: all 0.25s ease-in-out;
+}
+
+.bg-kinesis-card:hover {
+    border-color: var(--border-cyan-glow);
+    box-shadow: 0 8px 30px rgba(0, 242, 254, 0.08);
+}
+
+.bg-glass {
+    background: rgba(18, 24, 36, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Text Colors */
+.text-neon-cyan {
+    color: var(--neon-cyan) !important;
+}
+
+.text-neon-green {
+    color: var(--neon-green) !important;
+}
+
+.text-neon-orange {
+    color: var(--neon-orange) !important;
+}
+
+.text-neon-red {
+    color: var(--neon-red) !important;
+}
+
+/* Buttons */
+.btn-neon-cyan {
+    background: linear-gradient(135deg, var(--neon-cyan), #4facfe);
+    color: #050d1a !important;
+    border: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.btn-neon-cyan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--neon-cyan-glow);
+}
+
+.btn-neon-green {
+    background: linear-gradient(135deg, var(--neon-green), #60efff);
+    color: #050d1a !important;
+    border: none;
+    font-weight: 700;
+}
+
+.btn-neon-green:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--neon-green-glow);
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+}
+
+/* Typography & Badges */
+.fs-7 { font-size: 0.85rem; }
+.fs-8 { font-size: 0.75rem; }
+
+.pulse-green {
+    width: 8px;
+    height: 8px;
+    background-color: var(--neon-green);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 8px var(--neon-green);
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 135, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(0, 255, 135, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 135, 0); }
+}
+
+/* Hero Section */
+.hero-gradient-text {
+    background: linear-gradient(135deg, #ffffff 30%, var(--neon-cyan) 80%, #0072ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* AI Pipeline Step Cards */
+.pipeline-step {
+    border-left: 3px solid var(--neon-cyan);
+    background: rgba(18, 24, 36, 0.6);
+    padding: 16px;
+    border-radius: 0 12px 12px 0;
+}
+
+/* Live Webcam & Canvas HUD Overlay Container */
+.webcam-container {
+    position: relative;
+    width: 100%;
+    max-width: 840px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.webcam-video {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: scaleX(-1); /* Mirror view for natural intuitive webcam training */
+}
+
+.skeleton-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+    pointer-events: none;
+}
+
+/* HUD Overlay Elements */
+.hud-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    z-index: 10;
+}
+
+.hud-interactive {
+    pointer-events: auto;
+}
+
+.hud-card {
+    background: rgba(10, 14, 23, 0.82);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px 16px;
+}
+
+.hud-score-badge {
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Calibration Overlay */
+.calibration-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 20, 0.88);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    padding: 24px;
+    text-align: center;
+}
+
+.calibration-box {
+    width: 220px;
+    height: 380px;
+    border: 2px dashed var(--neon-cyan);
+    border-radius: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.2);
+}
+
+/* Metric Bars */
+.metric-progress {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.metric-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Gamification & Badges */
+.badge-card {
+    background: var(--kinesis-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.badge-card.unlocked {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.05) 0%, var(--kinesis-bg-card) 100%);
+}
+
+.badge-card.locked {
+    opacity: 0.45;
+    filter: grayscale(1);
+}
+
+.badge-icon-lg {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+/* Voice Wave Animation */
+.voice-wave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 40px;
+}
+
+.voice-wave-bar {
+    width: 4px;
+    height: 12px;
+    background: var(--neon-cyan);
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite;
+}
+
+.voice-wave-bar:nth-child(2) { animation-delay: 0.2s; }
+.voice-wave-bar:nth-child(3) { animation-delay: 0.4s; }
+.voice-wave-bar:nth-child(4) { animation-delay: 0.6s; }
+.voice-wave-bar:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 32px; background: var(--neon-green); }
+}

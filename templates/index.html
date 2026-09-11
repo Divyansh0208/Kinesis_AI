@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Kinesis AI — Webcam Movement Intelligence (SIH 2026){% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5 gy-4">
+        <div class="col-lg-7 text-center text-lg-start">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-cyan-glow text-neon-cyan fs-7 mb-3">
+                <span class="pulse-green"></span>
+                <span>Smart India Hackathon 2026 | PS ID: 26196</span>
+            </div>
+            <h1 class="display-3 fw-black mb-3 hero-gradient-text tracking-tight">
+                Your Webcam.<br>Your Movement.<br><span class="text-neon-cyan">Your AI Coach.</span>
+            </h1>
+            <p class="lead text-secondary mb-4 pe-lg-4">
+                Kinesis AI turns any standard laptop or phone camera into an elite movement coach. Real-time 33-point pose biomechanics, proactive injury risk indication, and sports technique analysis powered by local privacy-first Ollama AI.
+            </p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+                <a href="{{ url_for('sports.sports_hub') }}" class="btn btn-neon-cyan btn-lg px-4 py-3 rounded-pill d-flex align-items-center gap-2">
+                    <i class="bi bi-trophy-fill fs-5"></i>
+                    <span>Enter Sports Center</span>
+                </a>
+                <a href="{{ url_for('main.workout') }}" class="btn btn-glass btn-lg px-4 py-3 rounded-pill d-flex align-items-center gap-2">
+                    <i class="bi bi-heart-pulse-fill fs-5 text-danger"></i>
+                    <span>Fitness Tracker</span>
+                </a>
+                <a href="{{ url_for('main.voice') }}" class="btn btn-glass btn-lg px-4 py-3 rounded-pill d-flex align-items-center gap-2">
+                    <i class="bi bi-mic-fill fs-5 text-warning"></i>
+                    <span>Voice Coach (Hindi + English)</span>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <!-- 5-Stage Intelligence Card -->
+            <div class="bg-kinesis-card p-4 shadow-lg border border-secondary-subtle">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-cpu text-neon-cyan me-2"></i> 5-Stage Movement Intelligence</h5>
+                    <span class="badge bg-neon-green text-dark fw-bold">Live AI Loop</span>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                    <div class="pipeline-step">
+                        <strong class="text-neon-cyan">1. SENSE</strong>
+                        <div class="small text-secondary">Webcam → MediaPipe → 33 body landmarks at 30 FPS</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <strong class="text-neon-green">2. PREDICT</strong>
+                        <div class="small text-secondary">Joint angles → Technique quality score → Fatigue drift → Movement risk</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <strong class="text-warning">3. OPTIMIZE</strong>
+                        <div class="small text-secondary">Local Ollama AI (Gemini Fallback) → Personalized training & sports plans</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <strong class="text-info">4. ASSIST</strong>
+                        <div class="small text-secondary">Instant visual HUD feedback + Bilingual voice coaching</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <strong class="text-light">5. MONITOR</strong>
+                        <div class="small text-secondary">Unified dashboard → XP gamification → Streaks & biomechanics analytics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6 Core Pillars Section -->
+    <div class="py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-white mb-2">Explore the Movement Platform</h2>
+            <p class="text-secondary">Comprehensive AI training ecosystem for fitness, competitive sports, yoga, and athletic nutrition.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- 1. Fitness -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">🏋️‍♂️</span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary">Core Fitness</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Fitness Training</h4>
+                        <p class="text-secondary small">Real-time rep counting with form validation for Push-ups, Squats, Lunges, Planks, and Jumping Jacks.</p>
+                    </div>
+                    <a href="{{ url_for('main.workout') }}" class="btn btn-outline-light rounded-pill btn-sm w-100 mt-3">Start Workout <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- 2. Football -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between border-cyan-glow">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">⚽</span>
+                            <span class="badge bg-info-subtle text-info border border-info">Sports Center</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Football Training</h4>
+                        <p class="text-secondary small">Pose-based shooting biomechanics (plant foot, torso lean), dribbling agility, and player-inspired technical coaching.</p>
+                    </div>
+                    <a href="{{ url_for('sports.football_hub') }}" class="btn btn-neon-cyan rounded-pill btn-sm w-100 mt-3">Enter Football Hub <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- 3. Cricket -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between border-cyan-glow">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">🏏</span>
+                            <span class="badge bg-success-subtle text-success border border-success">Sports Center</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Cricket Biomechanics</h4>
+                        <p class="text-secondary small">Pull shot, cover drive (with Kohli-inspired technical principles), straight drive, batting stance, and bowling analysis.</p>
+                    </div>
+                    <a href="{{ url_for('sports.cricket_hub') }}" class="btn btn-neon-green rounded-pill btn-sm w-100 mt-3">Enter Cricket Hub <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- 4. Yoga -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">🧘‍♀️</span>
+                            <span class="badge bg-purple-subtle text-light border border-secondary">Mind & Body</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Yoga Alignment</h4>
+                        <p class="text-secondary small">Real-time posture feedback on Warrior II, Tree Pose, Downward Dog, Cobra, Triangle, and Mountain pose.</p>
+                    </div>
+                    <a href="{{ url_for('main.yoga') }}" class="btn btn-outline-light rounded-pill btn-sm w-100 mt-3">Practice Yoga <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- 5. Nutrition -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">🥗</span>
+                            <span class="badge bg-warning-subtle text-warning border border-warning">Nutrition AI</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Diet & Macro Planner</h4>
+                        <p class="text-secondary small">AI-generated nutritional plans tailored to Indian diets, BMR/TDEE calculations, and athletic macro splits.</p>
+                    </div>
+                    <a href="{{ url_for('main.diet') }}" class="btn btn-outline-light rounded-pill btn-sm w-100 mt-3">Generate Diet Plan <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- 6. Voice Coach -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-kinesis-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-1">🎙️</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger">Bilingual</span>
+                        </div>
+                        <h4 class="fw-bold text-white">Voice Coach</h4>
+                        <p class="text-secondary small">Ask questions in Hindi or English (e.g., <em>"Mera pull shot kaisa tha?"</em>) and get instant spoken tactical advice.</p>
+                    </div>
+                    <a href="{{ url_for('main.voice') }}" class="btn btn-outline-light rounded-pill btn-sm w-100 mt-3">Talk to Coach <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Injury Risk Engine Signature Banner -->
+    <div class="bg-glass p-4 p-md-5 rounded-4 border border-warning mt-4 text-center text-md-start">
+        <div class="row align-items-center gy-3">
+            <div class="col-md-8">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-warning-subtle text-warning fs-8 fw-bold mb-2">
+                    <i class="bi bi-shield-exclamation"></i> Signature Innovation
+                </div>
+                <h3 class="fw-bold text-white">Proactive Movement-Risk Engine</h3>
+                <p class="text-secondary mb-0">
+                    Kinesis AI analyzes joint angle deviation, left/right asymmetry, and fatigue-induced form deterioration in real-time. We flag injury risks before pain occurs with clear non-medical athletic guidance.
+                </p>
+            </div>
+            <div class="col-md-4 text-center text-md-end">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-semibold">View Risk Radar</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

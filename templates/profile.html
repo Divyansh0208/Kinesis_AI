@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Athlete Profile & Settings — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="bg-kinesis-card p-4 p-md-5 shadow-lg">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="rounded-circle bg-dark border border-cyan-glow p-3 text-center" style="width: 60px; height: 60px;">
+                        <i class="bi bi-person-gear fs-3 text-neon-cyan"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-white mb-0">Athlete Profile</h3>
+                        <span class="text-secondary small">Manage your fitness parameters and sport preferences</span>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('main.profile') }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Username</label>
+                            <input type="text" class="form-control bg-dark text-muted border-secondary" value="{{ user.username }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Full Name</label>
+                            <input type="text" name="full_name" class="form-control bg-dark text-light border-secondary" value="{{ user.full_name or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-4">
+                            <label class="form-label text-secondary small fw-semibold">Age (Years)</label>
+                            <input type="number" name="age" class="form-control bg-dark text-light border-secondary" value="{{ user.age or 22 }}">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label text-secondary small fw-semibold">Weight (kg)</label>
+                            <input type="number" step="0.5" name="weight" class="form-control bg-dark text-light border-secondary" value="{{ user.weight or 70 }}">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label text-secondary small fw-semibold">Height (cm)</label>
+                            <input type="number" name="height" class="form-control bg-dark text-light border-secondary" value="{{ user.height or 175 }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Fitness Level</label>
+                            <select name="fitness_level" class="form-select bg-dark text-light border-secondary">
+                                <option value="beginner" {% if user.fitness_level == 'beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="intermediate" {% if user.fitness_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="advanced" {% if user.fitness_level == 'advanced' %}selected{% endif %}>Advanced / Athlete</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Preferred Sport Focus</label>
+                            <select name="preferred_sport" class="form-select bg-dark text-light border-secondary">
+                                <option value="football" {% if user.preferred_sport == 'football' %}selected{% endif %}>Football</option>
+                                <option value="cricket" {% if user.preferred_sport == 'cricket' %}selected{% endif %}>Cricket</option>
+                                <option value="fitness" {% if user.preferred_sport == 'fitness' %}selected{% endif %}>General Fitness</option>
+                                <option value="yoga" {% if user.preferred_sport == 'yoga' %}selected{% endif %}>Yoga</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center bg-dark p-3 rounded-3 mb-4 border border-secondary">
+                        <div>
+                            <span class="text-secondary fs-8 d-block">TOTAL LIFETIME XP</span>
+                            <strong class="text-neon-cyan fs-5">{{ user.xp }} XP</strong>
+                        </div>
+                        <div>
+                            <span class="text-secondary fs-8 d-block">LOGIN STREAK</span>
+                            <strong class="text-neon-orange fs-5"><i class="bi bi-fire"></i> {{ user.streak_days }} Days</strong>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-neon-cyan w-100 py-2 rounded-pill fw-bold">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

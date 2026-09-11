@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}AI Sports Training Planner — Kinesis AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('sports.sports_hub') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-warning text-warning fs-8 mb-1">
+                <span>⚡ AI Sports Intelligence</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">AI Sports Training Plan Generator</h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Form Column -->
+        <div class="col-lg-5">
+            <div class="bg-kinesis-card p-4 p-md-5 h-100 shadow-lg">
+                <h4 class="fw-bold text-white mb-3"><i class="bi bi-sliders text-neon-cyan me-2"></i> Configure Your Plan</h4>
+                <p class="text-secondary small mb-4">
+                    Kinesis AI uses local Ollama (with Gemini fallback) to synthesize a progressive 4-week sports-specific training regimen.
+                </p>
+
+                <form method="POST" action="{{ url_for('sports.sports_workout_generator') }}">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-semibold">Sport</label>
+                        <select name="sport" class="form-select bg-dark text-light border-secondary" id="sportSelect">
+                            <option value="football" selected>Football (Soccer)</option>
+                            <option value="cricket">Cricket</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-semibold">Position / Role</label>
+                        <select name="position" class="form-select bg-dark text-light border-secondary" id="positionSelect">
+                            <option value="Forward / Striker" selected>Forward / Striker</option>
+                            <option value="Midfielder">Midfielder (Playmaker / Box-to-Box)</option>
+                            <option value="Winger">Winger (Pace & Dribbling)</option>
+                            <option value="Defender">Defender (Center-back / Fullback)</option>
+                            <option value="Goalkeeper">Goalkeeper</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold">Skill Level</label>
+                            <select name="skill_level" class="form-select bg-dark text-light border-secondary">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="advanced">Advanced / Pro</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold">Plan Length</label>
+                            <select name="weeks" class="form-select bg-dark text-light border-secondary">
+                                <option value="4" selected>4 Weeks</option>
+                                <option value="2">2 Weeks</option>
+                                <option value="6">6 Weeks</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-semibold">Primary Goal</label>
+                        <select name="goal" class="form-select bg-dark text-light border-secondary">
+                            <option value="Speed & Explosiveness" selected>Speed & Explosiveness</option>
+                            <option value="Agility & Direction Change">Agility & Direction Change</option>
+                            <option value="Technical Precision & Shooting/Batting">Technical Precision</option>
+                            <option value="Match Endurance & Stamina">Match Endurance & Stamina</option>
+                            <option value="Injury Prevention & Recovery">Injury Prevention & Recovery</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-semibold">Available Equipment</label>
+                        <select name="equipment" class="form-select bg-dark text-light border-secondary">
+                            <option value="None / Bodyweight Only">None (Bodyweight / Living Room)</option>
+                            <option value="Basic (Cones, Ball, Ladder)" selected>Basic (Cones, Ball, Agility Ladder)</option>
+                            <option value="Full Gym / Ground Access">Full Gym & Ground Equipment</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-neon-cyan w-100 py-3 rounded-pill fw-bold">
+                        <i class="bi bi-stars me-1"></i> Generate Sports Training Plan
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Generated Plan Column -->
+        <div class="col-lg-7">
+            <div class="bg-kinesis-card p-4 p-md-5 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold text-white mb-0"><i class="bi bi-file-earmark-text text-neon-green me-2"></i> Your Personalized Regimen</h4>
+                    {% if provider %}
+                        <span class="badge bg-dark border border-success text-neon-green">Generated via {{ provider|upper }}</span>
+                    {% endif %}
+                </div>
+
+                {% if plan %}
+                    <div class="p-4 bg-dark rounded-4 border border-secondary text-light flex-grow-1 overflow-auto" style="max-height: 600px; white-space: pre-line; line-height: 1.7;">
+                        {{ plan }}
+                    </div>
+                {% else %}
+                    <div class="p-5 text-center text-secondary border border-dashed border-secondary rounded-4 my-auto">
+                        <span class="display-3 text-secondary mb-3 d-block"><i class="bi bi-calendar-week"></i></span>
+                        <h5 class="fw-bold text-white mb-1">No Plan Generated Yet</h5>
+                        <p class="small text-muted mb-0">Select your sport, position, and athletic target to produce your personalized 4-week training schedule.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sportSelect = document.getElementById('sportSelect');
+        const posSelect = document.getElementById('positionSelect');
+
+        const positions = {
+            football: [
+                'Forward / Striker',
+                'Midfielder (Playmaker / Box-to-Box)',
+                'Winger (Pace & Dribbling)',
+                'Defender (Center-back / Fullback)',
+                'Goalkeeper'
+            ],
+            cricket: [
+                'Top-Order Batter',
+                'Middle-Order Batter / Finisher',
+                'Fast Bowler',
+                'Spin Bowler',
+                'All-Rounder',
+                'Wicketkeeper-Batter'
+            ]
+        };
+
+        if (sportSelect && posSelect) {
+            sportSelect.addEventListener('change', () => {
+                const selectedSport = sportSelect.value;
+                const opts = positions[selectedSport] || positions.football;
+                posSelect.innerHTML = opts.map(p => `<option value="${p}">${p}</option>`).join('');
+            });
+        }
+    });
+</script>
+{% endblock %}
