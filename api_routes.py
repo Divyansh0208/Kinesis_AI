@@ -3,6 +3,7 @@ Kinesis AI - REST API Endpoints
 Real-time pose analysis, calibration checks, session persistence, voice coach chat, AI training analysis, and gamification rewards.
 """
 
+import logging
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from models import db, Workout, SportsSession, InjuryRiskRecord, UserProgress
@@ -16,6 +17,8 @@ from voice_service import process_voice_query
 from gamification import GamificationEngine
 from google_fit_service import GoogleFitService
 from ai_provider import get_ai
+
+logger = logging.getLogger(__name__)
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -176,19 +179,36 @@ def save_fitness_session():
             'duration': duration
         })
 
-        # Sync to Google Fit / Local Health
+               # Sync to Google Fit / Local Health
         fit_svc = GoogleFitService()
         fit_svc.sync_workout(user_id, workout.to_dict())
+
+    # AI coaching based on structured session metrics (not raw video)
+    ai_coaching = None
+    try:
+        ai = get_ai()
+        session_summary = {
+            'exercise_type': exercise_type,
+            'reps': reps,
+            'quality_reps': quality_reps,
+            'duration_seconds': round(duration, 1),
+            'form_score': round(form_score, 1),
+            'fatigue_level': fatigue_level,
+            'metrics': metrics
+        }
+        ai_result = ai.analyze_session(session_summary)
+        ai_coaching = ai_result.get('text')
+    except Exception as e:
+        logger.warning(f"AI session coaching failed: {e}")
 
     return jsonify({
         'status': 'success',
         'xp_earned': xp_earned,
         'level_up': level_up,
         'new_badges': new_badges,
-        'calories_estimated': calories
+        'calories_estimated': calories,
+        'ai_coaching': ai_coaching
     })
-
-
 # ============================================================
 # Football Real-Time Analysis & Save
 # ============================================================

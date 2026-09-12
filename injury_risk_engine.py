@@ -45,7 +45,18 @@ class InjuryRiskEngine:
         risk_score = 0.0
 
         # Check Left/right asymmetry detection
-        symmetry = calculate_symmetry(landmarks, LEFT_KNEE, RIGHT_KNEE)
+        # Extract landmark coordinates
+        left_hip = get_landmark_xy(landmarks, LEFT_HIP)
+        left_knee = get_landmark_xy(landmarks, LEFT_KNEE)
+        left_ankle = get_landmark_xy(landmarks, LEFT_ANKLE)
+        right_hip = get_landmark_xy(landmarks, RIGHT_HIP)
+        right_knee = get_landmark_xy(landmarks, RIGHT_KNEE)
+        right_ankle = get_landmark_xy(landmarks, RIGHT_ANKLE)
+        
+        # Calculate knee angles for symmetry calculation
+        left_knee_angle = calculate_angle(left_hip, left_knee, left_ankle)
+        right_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
+        symmetry = calculate_symmetry(left_knee_angle, right_knee_angle)
         self.asymmetry_history.append(symmetry)
         if symmetry < 0.8:
             indicators.append("Significant knee asymmetry detected.")
@@ -53,8 +64,7 @@ class InjuryRiskEngine:
             risk_score += 15.0
 
         # Check joint-angle deviation (e.g. knee varus/valgus proxy)
-        left_knee_angle = calculate_angle(landmarks, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE)
-        right_knee_angle = calculate_angle(landmarks, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE)
+        # (Angles already calculated above for symmetry)
         
         self._get_angle_history('left_knee').append(left_knee_angle)
         self._get_angle_history('right_knee').append(right_knee_angle)
@@ -65,7 +75,9 @@ class InjuryRiskEngine:
             risk_score += 20.0
 
         # Stability deterioration
-        stability = calculate_stability(landmarks, LEFT_ANKLE, RIGHT_ANKLE)
+        # Create position history for stability calculation
+        ankle_positions = [left_ankle, right_ankle]
+        stability = calculate_stability(ankle_positions)
         if stability < 0.5:
             indicators.append("Poor lower body stability.")
             body_areas.add("Ankles/Base")
@@ -118,23 +130,48 @@ class InjuryRiskEngine:
         risks = []
         if sport.lower() == 'football':
             # Check knee alignment and ankle stability for landing mechanics
-            sym = calculate_symmetry(landmarks, LEFT_ANKLE, RIGHT_ANKLE)
+            left_ankle = get_landmark_xy(landmarks, LEFT_ANKLE)
+            right_ankle = get_landmark_xy(landmarks, RIGHT_ANKLE)
+            left_knee = get_landmark_xy(landmarks, LEFT_KNEE)
+            right_knee = get_landmark_xy(landmarks, RIGHT_KNEE)
+            
+            # Calculate distances for symmetry approximation
+            ankle_dist = calculate_distance(left_ankle, right_ankle)
+            knee_dist = calculate_distance(left_knee, right_knee)
+            sym = calculate_symmetry(ankle_dist, knee_dist)
             if sym < 0.7:
                 risks.append({'message': 'Unstable ankle alignment, elevated risk for landing mechanics.', 'area': 'Ankles', 'weight': 20})
-            knee_sym = calculate_symmetry(landmarks, LEFT_KNEE, RIGHT_KNEE)
+            
+            # For knee symmetry, use angle-based calculation
+            left_hip = get_landmark_xy(landmarks, LEFT_HIP)
+            right_hip = get_landmark_xy(landmarks, RIGHT_HIP)
+            left_ankle_lm = get_landmark_xy(landmarks, LEFT_ANKLE)
+            right_ankle_lm = get_landmark_xy(landmarks, RIGHT_ANKLE)
+            
+            left_knee_angle = calculate_angle(left_hip, left_knee, left_ankle_lm)
+            right_knee_angle = calculate_angle(right_hip, right_knee, right_ankle_lm)
+            knee_sym = calculate_symmetry(left_knee_angle, right_knee_angle)
             if knee_sym < 0.7:
                 risks.append({'message': 'Poor knee alignment during movement.', 'area': 'Knees', 'weight': 15})
                 
         elif sport.lower() == 'cricket':
             # Check lower-back posture proxy (shoulder to hip alignment)
-            shoulder_dist = calculate_distance(landmarks, LEFT_SHOULDER, RIGHT_SHOULDER)
-            hip_dist = calculate_distance(landmarks, LEFT_HIP, RIGHT_HIP)
+            left_shoulder = get_landmark_xy(landmarks, LEFT_SHOULDER)
+            right_shoulder = get_landmark_xy(landmarks, RIGHT_SHOULDER)
+            left_hip = get_landmark_xy(landmarks, LEFT_HIP)
+            right_hip = get_landmark_xy(landmarks, RIGHT_HIP)
+            
+            shoulder_dist = calculate_distance(left_shoulder, right_shoulder)
+            hip_dist = calculate_distance(left_hip, right_hip)
             if shoulder_dist > 0 and hip_dist / shoulder_dist > 1.5:
                 risks.append({'message': 'Uneven shoulder-hip loading detected.', 'area': 'Lower Back/Shoulders', 'weight': 15})
                 
         else:
             # General fitness
-            stability = calculate_stability(landmarks, LEFT_HIP, RIGHT_HIP)
+            left_hip = get_landmark_xy(landmarks, LEFT_HIP)
+            right_hip = get_landmark_xy(landmarks, RIGHT_HIP)
+            hip_positions = [left_hip, right_hip]
+            stability = calculate_stability(hip_positions)
             if stability < 0.6:
                 risks.append({'message': 'Inconsistent body alignment detected.', 'area': 'Core/Hips', 'weight': 10})
                 
