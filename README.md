@@ -288,8 +288,7 @@ Note: the bilingual voice assistant runs on **Sarvam AI** (cloud) rather than Ol
 
 - `sports_tracker.py` (shuttle runs, jump-rope cadence, agility ladder) — not yet built.
 - `coach_dashboard.py` (school/batch-level view) — not yet built.
-- Injury-risk / XP / badges / leaderboard have working backend routes, but no dashboard UI consumes them yet.
-- The live pose-detection loop needs to accumulate per-rep `form_score` values client-side and POST them to `/api/complete-session` when a set ends — this frontend wiring is the one manual integration step left.
+- `/api/leaderboard` and badge data have working backend routes, but no dashboard UI consumes them yet (streak/XP stats do already show on the dashboard).
 - Accessibility mode (chair/bed-bound variants, high-contrast UI, full voice-first navigation) is not yet implemented as a first-class mode.
 
 ---
