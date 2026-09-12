@@ -62,6 +62,31 @@
                             <i class="fas fa-star me-2"></i>Jumping Jacks
                         </button>
                     </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100 exercise-btn" data-exercise="plank">
+                            <i class="fas fa-minus me-2"></i>Plank
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100 exercise-btn" data-exercise="lunge">
+                            <i class="fas fa-shoe-prints me-2"></i>Lunges
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100 exercise-btn" data-exercise="bicep_curl">
+                            <i class="fas fa-dumbbell me-2"></i>Bicep Curls
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100 exercise-btn" data-exercise="mountain_climber">
+                            <i class="fas fa-person-running me-2"></i>Mountain Climbers
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100 exercise-btn" data-exercise="situp">
+                            <i class="fas fa-child-reaching me-2"></i>Sit-ups
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,7 +135,7 @@
                 <!-- Rep Count -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">Repetitions</h6>
+                        <h6 class="mb-0" id="rep-count-label">Repetitions</h6>
                         <span id="rep-count" class="badge bg-primary fs-4">0</span>
                     </div>
                 </div>
@@ -217,7 +242,12 @@ class ExerciseFormAnalyzer {
         this.exerciseState = {
             pushup: { state: 'up', lastAngle: 180 },
             squat: { state: 'up', lastAngle: 180 },
-            jumping_jack: { state: 'closed', lastSpread: 0 }
+            jumping_jack: { state: 'closed', lastSpread: 0 },
+            plank: { holdStartTime: null, consecutiveBadFrames: 0, elapsedInCurrentBlock: 0 },
+            lunge: { state: 'up' },
+            bicep_curl: { state: 'extended' },
+            mountain_climber: { leftState: 'extended', rightState: 'extended' },
+            situp: { state: 'lying' }
         };
 
         // Phase 2: per-rep form score history + session timing, feeds
@@ -246,6 +276,7 @@ class ExerciseFormAnalyzer {
         this.startBtn = document.getElementById('startBtn');
         this.stopBtn = document.getElementById('stopBtn');
         this.repCountEl = document.getElementById('rep-count');
+        this.repCountLabelEl = document.getElementById('rep-count-label');
         this.formScoreBar = document.getElementById('form-score-bar');
         this.statusEl = document.getElementById('exercise-status');
         this.feedbackContainer = document.getElementById('feedback-container');
@@ -377,8 +408,18 @@ class ExerciseFormAnalyzer {
         this.exerciseState = {
             pushup: { state: 'up', lastAngle: 180 },
             squat: { state: 'up', lastAngle: 180 },
-            jumping_jack: { state: 'closed', lastSpread: 0 }
+            jumping_jack: { state: 'closed', lastSpread: 0 },
+            plank: { holdStartTime: null, consecutiveBadFrames: 0, elapsedInCurrentBlock: 0 },
+            lunge: { state: 'up' },
+            bicep_curl: { state: 'extended' },
+            mountain_climber: { leftState: 'extended', rightState: 'extended' },
+            situp: { state: 'lying' }
         };
+
+        // Plank counts "10s holds" not reps — swap the stat label to match.
+        if (this.repCountLabelEl) {
+            this.repCountLabelEl.textContent = this.exerciseType === 'plank' ? 'Holds (10s)' : 'Repetitions';
+        }
     }
 
     async start() {
@@ -579,6 +620,16 @@ class ExerciseFormAnalyzer {
                 return this.analyzeSquat(landmarks);
             case 'jumping_jack':
                 return this.analyzeJumpingJack(landmarks);
+            case 'plank':
+                return this.analyzePlank(landmarks);
+            case 'lunge':
+                return this.analyzeLunge(landmarks);
+            case 'bicep_curl':
+                return this.analyzeBicepCurl(landmarks);
+            case 'mountain_climber':
+                return this.analyzeMountainClimber(landmarks);
+            case 'situp':
+                return this.analyzeSitup(landmarks);
             default:
                 return { reps: 0, formScore: 0, feedback: ['Unknown exercise'] };
         }
@@ -803,6 +854,308 @@ class ExerciseFormAnalyzer {
         } else if (!isOpen) {
             feedback.push('✅ Return to center position');
         }
+
+        return { reps: this.repCount, formScore: Math.round(formScore), feedback };
+    }
+
+    analyzePlank(landmarks) {
+        const leftShoulder = landmarks[11];
+        const rightShoulder = landmarks[12];
+        const leftHip = landmarks[23];
+        const rightHip = landmarks[24];
+        const leftAnkle = landmarks[27];
+        const rightAnkle = landmarks[28];
+
+        if (!leftShoulder || !rightShoulder || !leftHip || !rightHip || !leftAnkle || !rightAnkle ||
+            leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5 ||
+            leftHip.visibility < 0.5 || rightHip.visibility < 0.5 ||
+            leftAnkle.visibility < 0.5 || rightAnkle.visibility < 0.5) {
+            return { reps: this.repCount, formScore: 0, feedback: ['Position yourself side-on so shoulders, hips and ankles are all visible'] };
+        }
+
+        const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+        const shoulderMid = midpoint(leftShoulder, rightShoulder);
+        const hipMid = midpoint(leftHip, rightHip);
+        const ankleMid = midpoint(leftAnkle, rightAnkle);
+
+        // Unsigned bend angle at the hip (same helper as other counters).
+        const alignmentAngle = this.calculateAngle(
+            [shoulderMid.x, shoulderMid.y],
+            [hipMid.x, hipMid.y],
+            [ankleMid.x, ankleMid.y]
+        );
+
+        // Signed cross product of (shoulder->ankle) x (shoulder->hip) —
+        // identical math to PlankCounter.analyze in pose_detection.py.
+        // This is what distinguishes sag from pike; the unsigned angle
+        // alone bends by a similar magnitude either way.
+        const lineX = ankleMid.x - shoulderMid.x;
+        const lineY = ankleMid.y - shoulderMid.y;
+        const hipX = hipMid.x - shoulderMid.x;
+        const hipY = hipMid.y - shoulderMid.y;
+        const crossZ = lineX * hipY - lineY * hipX;
+        const isSagging = crossZ > 0; // positive => hip below the line => sagging
+
+        // Form score — mirrors _calculate_plank_form_score exactly.
+        const deviation = Math.abs(180 - alignmentAngle);
+        let formScore;
+        if (deviation <= 10) {
+            formScore = 100;
+        } else if (deviation <= 25) {
+            formScore = Math.max(0, 100 - (deviation - 10) * 3);
+        } else {
+            formScore = Math.max(0, 55 - (deviation - 25) * 2);
+        }
+
+        // Feedback — mirrors _generate_plank_feedback, using this file's
+        // ✅/⚠️ convention for styling + spoken feedback.
+        const feedback = [];
+        if (deviation > 15) {
+            if (isSagging) {
+                feedback.push('⚠️ Hips are sagging — engage your core and lift them up');
+            } else {
+                feedback.push('⚠️ Hips are too high — lower into a straight line');
+            }
+        }
+        if (!feedback.length) {
+            feedback.push(formScore >= 90 ? '✅ Great plank line — hold it' : '✅ Almost straight — small adjustment to your hip height');
+        }
+
+        // Hold-timer bookkeeping — mirrors PlankCounter.analyze's
+        // FORM_BREAK_THRESHOLD / BREAK_FRAME_LIMIT / HOLD_BLOCK_SECONDS.
+        // A "rep" here is one completed 10s block, so repFormScores /
+        // /api/complete-session keep working unchanged for plank too.
+        const HOLD_BLOCK_SECONDS = 10;
+        const FORM_BREAK_THRESHOLD = 40;
+        const BREAK_FRAME_LIMIT = 5;
+        const state = this.exerciseState.plank;
+        const now = Date.now() / 1000;
+
+        if (formScore < FORM_BREAK_THRESHOLD) {
+            state.consecutiveBadFrames++;
+            if (state.consecutiveBadFrames >= BREAK_FRAME_LIMIT) {
+                state.holdStartTime = null;
+                state.elapsedInCurrentBlock = 0;
+                state.consecutiveBadFrames = 0;
+            }
+        } else {
+            state.consecutiveBadFrames = 0;
+            if (state.holdStartTime === null) {
+                state.holdStartTime = now;
+            }
+            state.elapsedInCurrentBlock = now - state.holdStartTime;
+
+            if (state.elapsedInCurrentBlock >= HOLD_BLOCK_SECONDS) {
+                this.repCount++;
+                state.holdStartTime = now;
+                state.elapsedInCurrentBlock = 0;
+            }
+        }
+
+        return {
+            reps: this.repCount,
+            formScore: Math.round(formScore),
+            feedback,
+            holdSecondsInBlock: Math.round(state.elapsedInCurrentBlock * 10) / 10
+        };
+    }
+
+    analyzeLunge(landmarks) {
+        const leftShoulder = landmarks[11], rightShoulder = landmarks[12];
+        const leftHip = landmarks[23], rightHip = landmarks[24];
+        const leftKnee = landmarks[25], rightKnee = landmarks[26];
+        const leftAnkle = landmarks[27], rightAnkle = landmarks[28];
+
+        if ([leftShoulder, rightShoulder, leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle]
+            .some(l => !l || l.visibility < 0.5)) {
+            return { reps: this.repCount, formScore: 0, feedback: ['Position yourself so your full body is visible'] };
+        }
+
+        const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+        const leftKneeAngle = this.calculateAngle([leftHip.x, leftHip.y], [leftKnee.x, leftKnee.y], [leftAnkle.x, leftAnkle.y]);
+        const rightKneeAngle = this.calculateAngle([rightHip.x, rightHip.y], [rightKnee.x, rightKnee.y], [rightAnkle.x, rightAnkle.y]);
+
+        // Front (working) leg = whichever is more bent this frame — mirrors LungeCounter.analyze.
+        const frontIsLeft = leftKneeAngle <= rightKneeAngle;
+        const frontKneeAngle = frontIsLeft ? leftKneeAngle : rightKneeAngle;
+        const frontKnee = frontIsLeft ? leftKnee : rightKnee;
+        const frontAnkle = frontIsLeft ? leftAnkle : rightAnkle;
+
+        const hipMid = midpoint(leftHip, rightHip);
+        const shoulderMid = midpoint(leftShoulder, rightShoulder);
+        const hipWidth = Math.abs(leftHip.x - rightHip.x) || 0.15;
+
+        const kneeForwardOffset = Math.abs(frontKnee.x - frontAnkle.x) / hipWidth;
+        const torsoLean = Math.abs(shoulderMid.x - hipMid.x) / hipWidth;
+        const minKneeAngle = Math.min(leftKneeAngle, rightKneeAngle);
+
+        const state = this.exerciseState.lunge;
+        if (state.state === 'up' && minKneeAngle < 100) {
+            state.state = 'down';
+        } else if (state.state === 'down' && minKneeAngle > 160) {
+            state.state = 'up';
+            this.repCount++;
+        }
+
+        let depthScore;
+        if ((frontKneeAngle >= 80 && frontKneeAngle <= 100) || (frontKneeAngle >= 160 && frontKneeAngle <= 180)) {
+            depthScore = 100;
+        } else if (frontKneeAngle > 100 && frontKneeAngle < 160) {
+            depthScore = 70;
+        } else {
+            depthScore = Math.max(0, 100 - Math.abs(frontKneeAngle - 90) * 2);
+        }
+        const kneePositionScore = Math.max(0, 100 - Math.max(0, kneeForwardOffset - 0.4) * 150);
+        const torsoScore = Math.max(0, 100 - torsoLean * 150);
+        const formScore = (depthScore * 0.5) + (kneePositionScore * 0.3) + (torsoScore * 0.2);
+
+        const feedback = [];
+        if (kneeForwardOffset > 0.55) feedback.push('⚠️ Keep your front knee behind your toes');
+        if (torsoLean > 0.4) feedback.push('⚠️ Keep your torso upright, don\'t lean forward');
+        if (frontKneeAngle < 80) feedback.push('⚠️ Don\'t drop too low on the front knee');
+        else if (frontKneeAngle > 100 && frontKneeAngle < 160) feedback.push('⚠️ Lower further for a full lunge');
+        if (!feedback.length) feedback.push('✅ Great lunge form!');
+
+        return { reps: this.repCount, formScore: Math.round(formScore), feedback };
+    }
+
+    analyzeBicepCurl(landmarks) {
+        const leftShoulder = landmarks[11], rightShoulder = landmarks[12];
+        const leftElbow = landmarks[13], rightElbow = landmarks[14];
+        const leftWrist = landmarks[15], rightWrist = landmarks[16];
+        const leftHip = landmarks[23], rightHip = landmarks[24];
+
+        if ([leftShoulder, rightShoulder, leftElbow, rightElbow, leftWrist, rightWrist, leftHip, rightHip]
+            .some(l => !l || l.visibility < 0.5)) {
+            return { reps: this.repCount, formScore: 0, feedback: ['Position yourself so your arms and torso are visible'] };
+        }
+
+        const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+        const leftAngle = this.calculateAngle([leftShoulder.x, leftShoulder.y], [leftElbow.x, leftElbow.y], [leftWrist.x, leftWrist.y]);
+        const rightAngle = this.calculateAngle([rightShoulder.x, rightShoulder.y], [rightElbow.x, rightElbow.y], [rightWrist.x, rightWrist.y]);
+        const avgAngle = (leftAngle + rightAngle) / 2;
+
+        const shoulderMid = midpoint(leftShoulder, rightShoulder);
+        const hipMid = midpoint(leftHip, rightHip);
+        const torsoLen = Math.abs(shoulderMid.y - hipMid.y) || 0.3;
+        const elbowMidX = (leftElbow.x + rightElbow.x) / 2;
+        const elbowSwing = Math.abs(elbowMidX - shoulderMid.x) / torsoLen;
+
+        const state = this.exerciseState.bicep_curl;
+        if (state.state === 'extended' && avgAngle < 50) {
+            state.state = 'curled';
+        } else if (state.state === 'curled' && avgAngle > 150) {
+            state.state = 'extended';
+            this.repCount++;
+        }
+
+        let angleScore;
+        if (avgAngle <= 50 || avgAngle >= 150) angleScore = 100;
+        else if (avgAngle > 50 && avgAngle < 150) angleScore = 70;
+        else angleScore = Math.max(0, 100 - Math.abs(avgAngle - 100));
+        const stabilityScore = Math.max(0, 100 - Math.max(0, elbowSwing - 0.15) * 300);
+        const formScore = (angleScore * 0.7) + (stabilityScore * 0.3);
+
+        const feedback = [];
+        if (elbowSwing > 0.3) feedback.push('⚠️ Keep your elbow pinned to your side, don\'t swing');
+        if (avgAngle < 50 && state.state === 'curled') feedback.push('✅ Good squeeze at the top! Now lower slowly');
+        else if (avgAngle > 150) feedback.push('✅ Nice full extension');
+        if (!feedback.length) feedback.push('✅ Great curl form!');
+
+        return { reps: this.repCount, formScore: Math.round(formScore), feedback };
+    }
+
+    analyzeMountainClimber(landmarks) {
+        const leftShoulder = landmarks[11], rightShoulder = landmarks[12];
+        const leftHip = landmarks[23], rightHip = landmarks[24];
+        const leftKnee = landmarks[25], rightKnee = landmarks[26];
+        const leftAnkle = landmarks[27], rightAnkle = landmarks[28];
+
+        if ([leftShoulder, rightShoulder, leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle]
+            .some(l => !l || l.visibility < 0.5)) {
+            return { reps: this.repCount, formScore: 0, feedback: ['Position yourself in a full plank, side-on to the camera'] };
+        }
+
+        const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+        const DRIVE_THRESHOLD = 100;
+        const RESET_THRESHOLD = 155;
+        const state = this.exerciseState.mountain_climber;
+
+        const leftHipAngle = this.calculateAngle([leftShoulder.x, leftShoulder.y], [leftHip.x, leftHip.y], [leftKnee.x, leftKnee.y]);
+        const rightHipAngle = this.calculateAngle([rightShoulder.x, rightShoulder.y], [rightHip.x, rightHip.y], [rightKnee.x, rightKnee.y]);
+
+        if (state.leftState === 'extended' && leftHipAngle < DRIVE_THRESHOLD) {
+            state.leftState = 'driven';
+        } else if (state.leftState === 'driven' && leftHipAngle > RESET_THRESHOLD) {
+            state.leftState = 'extended';
+            this.repCount++;
+        }
+        if (state.rightState === 'extended' && rightHipAngle < DRIVE_THRESHOLD) {
+            state.rightState = 'driven';
+        } else if (state.rightState === 'driven' && rightHipAngle > RESET_THRESHOLD) {
+            state.rightState = 'extended';
+            this.repCount++;
+        }
+
+        const shoulderMid = midpoint(leftShoulder, rightShoulder);
+        const hipMid = midpoint(leftHip, rightHip);
+        const ankleMid = midpoint(leftAnkle, rightAnkle);
+        const plankAngle = this.calculateAngle([shoulderMid.x, shoulderMid.y], [hipMid.x, hipMid.y], [ankleMid.x, ankleMid.y]);
+        const plankDeviation = Math.abs(180 - plankAngle);
+        const driveDepth = Math.min(leftHipAngle, rightHipAngle);
+
+        const plankScore = Math.max(0, 100 - plankDeviation * 3);
+        const driveScore = driveDepth < DRIVE_THRESHOLD ? 100 : Math.max(0, 100 - (driveDepth - DRIVE_THRESHOLD));
+        const formScore = (plankScore * 0.6) + (driveScore * 0.4);
+
+        const feedback = [];
+        if (plankDeviation > 15) feedback.push('⚠️ Keep your hips level — don\'t let them rise or sag while climbing');
+        if (driveDepth > DRIVE_THRESHOLD + 15) feedback.push('⚠️ Drive your knee further toward your chest');
+        if (!feedback.length) feedback.push('✅ Great pace and form!');
+
+        return { reps: this.repCount, formScore: Math.round(formScore), feedback };
+    }
+
+    analyzeSitup(landmarks) {
+        const leftShoulder = landmarks[11], rightShoulder = landmarks[12];
+        const leftHip = landmarks[23], rightHip = landmarks[24];
+        const leftKnee = landmarks[25], rightKnee = landmarks[26];
+        const leftAnkle = landmarks[27], rightAnkle = landmarks[28];
+
+        if ([leftShoulder, rightShoulder, leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle]
+            .some(l => !l || l.visibility < 0.5)) {
+            return { reps: this.repCount, formScore: 0, feedback: ['Position yourself lying down, side-on to the camera'] };
+        }
+
+        const leftTorsoAngle = this.calculateAngle([leftShoulder.x, leftShoulder.y], [leftHip.x, leftHip.y], [leftKnee.x, leftKnee.y]);
+        const rightTorsoAngle = this.calculateAngle([rightShoulder.x, rightShoulder.y], [rightHip.x, rightHip.y], [rightKnee.x, rightKnee.y]);
+        const avgTorsoAngle = (leftTorsoAngle + rightTorsoAngle) / 2;
+
+        const leftKneeAngle = this.calculateAngle([leftHip.x, leftHip.y], [leftKnee.x, leftKnee.y], [leftAnkle.x, leftAnkle.y]);
+        const rightKneeAngle = this.calculateAngle([rightHip.x, rightHip.y], [rightKnee.x, rightKnee.y], [rightAnkle.x, rightAnkle.y]);
+        const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+
+        const state = this.exerciseState.situp;
+        if (state.state === 'lying' && avgTorsoAngle < 100) {
+            state.state = 'crunched';
+        } else if (state.state === 'crunched' && avgTorsoAngle > 150) {
+            state.state = 'lying';
+            this.repCount++;
+        }
+
+        let romScore;
+        if (avgTorsoAngle <= 100 || avgTorsoAngle >= 160) romScore = 100;
+        else if (avgTorsoAngle > 100 && avgTorsoAngle < 160) romScore = 70;
+        else romScore = Math.max(0, 100 - Math.abs(avgTorsoAngle - 130));
+        const kneeStabilityScore = avgKneeAngle < 140 ? 100 : Math.max(0, 100 - (avgKneeAngle - 140) * 3);
+        const formScore = (romScore * 0.7) + (kneeStabilityScore * 0.3);
+
+        const feedback = [];
+        if (avgKneeAngle >= 140) feedback.push('⚠️ Keep your knees bent, don\'t kick your legs to cheat the rep');
+        if (avgTorsoAngle > 100 && avgTorsoAngle < 150 && state.state === 'crunched') feedback.push('⚠️ Curl up higher for a full rep');
+        else if (avgTorsoAngle <= 100) feedback.push('✅ Good crunch! Now lower with control');
+        else if (avgTorsoAngle >= 150) feedback.push('⚠️ Don\'t use momentum — control the movement');
+        if (!feedback.length) feedback.push('✅ Great sit-up form!');
 
         return { reps: this.repCount, formScore: Math.round(formScore), feedback };
     }
