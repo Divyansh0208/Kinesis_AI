@@ -1,4 +1,3 @@
-
 # Core dependencies
 flask==2.3.3
 flask-login==0.6.2
@@ -21,7 +20,7 @@ sqlalchemy
 google-auth
 google-auth-oauthlib
 requests
-Flask-Session
+Flask-Session>=0.6.0
 
 # Bilingual voice assistant helpers
 langdetect>=1.0.9

@@ -67,18 +67,12 @@ def create_app():
     app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-    # Configure Server-Side Sessions (to handle large OAuth tokens)
-    app.config["SESSION_TYPE"] = "filesystem"
-    app.config["SESSION_PERMANENT"] = False
-    app.config["SESSION_USE_SIGNER"] = True
-    Session(app)
-
     # Configure the database
     # Handle potential "postgres://" URLs from Railway
     database_url = os.environ.get("DATABASE_URL", "sqlite:///kinesis.db")
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
-    
+
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
@@ -88,6 +82,31 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
+
+    # Configure Sessions.
+    #
+    # This used to be SESSION_TYPE = "filesystem" — session files written
+    # to disk. That breaks on any host with an ephemeral or non-shared
+    # filesystem (Render, Heroku, multi-instance deploys): every restart
+    # or redeploy wipes the folder and every logged-in user gets silently
+    # signed out / loses in-progress state (same failure class as the
+    # earlier stale voice-session bug, just triggered by a restart
+    # instead of a stale cookie).
+    #
+    # Switched to the SQLAlchemy backend instead: sessions are rows in
+    # the same Postgres database everything else already uses, so they
+    # survive restarts/redeploys and work correctly even if this app
+    # ever runs as more than one instance. Kept SESSION_TYPE off
+    # "cookie" (the zero-infra default) specifically because OAuth
+    # tokens (Google Fit) can be too large for the ~4KB signed-cookie
+    # limit — this comment is the reason a plain cookie switch wasn't
+    # used instead.
+    app.config["SESSION_TYPE"] = "sqlalchemy"
+    app.config["SESSION_SQLALCHEMY"] = db
+    app.config["SESSION_PERMANENT"] = False
+    app.config["SESSION_USE_SIGNER"] = True
+    Session(app)
+
     login_manager.init_app(app)
     login_manager.login_view = 'login'
 
