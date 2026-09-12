@@ -1,140 +1,408 @@
-# ⚡ Kinesis AI — Webcam Movement Intelligence Platform
+# Kinesis AI
 
-[![SIH 2026](https://img.shields.io/badge/Smart%20India%20Hackathon-2026-blue.svg)](https://sih.gov.in)
-[![PS ID](https://img.shields.io/badge/PS%20ID-26196-orange.svg)](https://sih.gov.in)
-[![Theme](https://img.shields.io/badge/Theme-Fitness%20%26%20Sports-green.svg)](https://sih.gov.in)
-[![Team](https://img.shields.io/badge/Team-INOVE8-purple.svg)](https://github.com)
-[![Privacy](https://img.shields.io/badge/AI-Ollama%20Local%20(Primary)-brightgreen.svg)](https://ollama.com)
+## AI-Powered Movement Intelligence for Safer, Smarter Fitness
 
-> **"Your Webcam. Your Movement. Your AI Coach."**
-
-Kinesis AI transforms any ordinary smartphone or laptop camera into an elite, real-time biomechanics coach and movement intelligence platform. Built for **Smart India Hackathon 2026 (PS ID: 26196, Fitness & Sports Theme)** by **Team INOVE8**.
+**Smart India Hackathon 2026 | PS ID: 26196 | Fitness & Sports Theme | Team INOVE8**
 
 ---
 
-## 🌟 Core Product Concept: The 5-Stage Movement Intelligence Loop
+## Problem
+
+Conventional fitness applications track steps, calories, and repetitions, but often fail to understand movement quality and form. This leads to:
+
+- Poor exercise technique causing injuries
+- Lack of real-time corrective feedback
+- No personalized coaching based on individual biomechanics
+- Sports athletes training without technical guidance
+- Yoga practitioners practicing without alignment verification
+
+## Solution
+
+Kinesis AI transforms any webcam into an intelligent movement coach using computer vision and AI. The system:
+
+1. **Captures** real-time movement via webcam at 30 FPS
+2. **Analyzes** 33 body landmarks using MediaPipe Pose
+3. **Calculates** joint angles, symmetry, stability, and range of motion
+4. **Detects** exercise repetitions with quality gating
+5. **Scores** form in real-time (0-100 scale)
+6. **Identifies** movement-risk indicators (non-medical)
+7. **Provides** instant audio/visual feedback
+8. **Generates** personalized training plans using AI
+9. **Tracks** progress with gamification (XP, badges, levels)
+
+## Core Innovation
+
+**Movement Quality → Risk Detection → Personalized Intervention**
+
+Unlike step-counters, Kinesis AI understands **how** you move, not just **how much** you move. The system:
+
+- Uses deterministic biomechanical calculations (no AI inference during real-time analysis)
+- Processes video locally on the client for privacy
+- Employs AI only for coaching insights and training plan generation
+- Maintains a clear boundary between movement-risk indicators and medical advice
+
+## Key Features
+
+### Currently Working Features
+
+#### Real-Time Pose Estimation
+- 33-point body landmark tracking via MediaPipe
+- 30 FPS analysis on standard hardware
+- Client-side processing for low latency
+
+#### Fitness Exercise Analysis
+- **Push-ups**: Elbow depth (90°), body alignment, symmetry
+- **Squats**: Thigh parallel (80°-100°), knee-over-toe alignment, torso position
+- **Lunges**: 90° knee flexion, back-knee clearance, spine stability
+- **Planks**: Hold duration, core sag detection, stability score
+- **Jumping Jacks**: Arm reach (>150°), leg spread cadence
+- **Quality Rep Gating**: Only reps meeting biomechanical criteria count
+
+#### Football Intelligence
+- **Shooting Biomechanics**: Plant foot, knee flexion, hip rotation, torso lean, follow-through
+- **Pose-Based Dribbling**: Center of mass shifts, directional pivots
+- **Agility Drills**: Movement speed and direction changes
+- **Style-Inspired Coaching**: Technical philosophies (e.g., Messi close-control)
+
+#### Cricket Biomechanics
+- **Pull Shot**: Back-foot weight transfer, hip rotation, head stability
+- **Cover Drive**: Front-foot stride, head-over-ball alignment (Kohli mode)
+- **Straight Drive**: Vertical bat presentation, high elbow drive
+- **Batting Stance**: Base width, knee flexion, shoulder alignment
+- **Bowling**: Run-up posture, front-leg brace, lumbar safety
+
+#### Yoga Posture Analysis
+- Warrior II, Tree Pose, Downward Dog, Cobra, Triangle, Mountain Pose
+- Real-time alignment feedback
+- Balance and stability scoring
+
+#### Injury-Risk Engine
+- Joint-angle deviation detection
+- Left/right asymmetry analysis
+- Range of motion monitoring
+- Fatigue-related form deterioration
+- Risk classification: Low/Moderate/High
+- **Disclaimer**: "This is a movement-risk indicator, not a medical diagnosis."
+
+#### AI-Powered Coaching
+- **Ollama (Primary)**: Local inference for privacy
+- **Gemini (Fallback)**: Cloud API when Ollama unavailable
+- **Training Plans**: 4-week position-specific sports regimens
+- **Diet Planning**: BMR/TDEE calculation with Indian nutrition options
+- **Voice Coach**: Bilingual Hindi/English audio feedback
+
+#### Gamification System
+- XP rewards for quality reps (not just rep count)
+- Badge unlocks (form milestones, streaks, sports exploration)
+- Level progression with titles (Rookie → Legend)
+- Daily streak tracking
+- Leaderboard support
+
+#### User Management
+- Firebase-ready authentication (currently Flask-Login)
+- User profiles with fitness level and sport preferences
+- Workout and sports session history
+- Dashboard with Chart.js visualizations
+
+## System Architecture
+
+```mermaid
+graph TD
+    subgraph Client ["Browser Client"]
+        Webcam["🎥 Webcam"]
+        MediaPipe["⚡ MediaPipe Pose JS"]
+        Canvas["🎨 Canvas HUD"]
+        Voice["🎙️ Web Speech API"]
+    end
+    
+    subgraph Backend ["Flask Backend"]
+        API["REST API"]
+        Fitness["Fitness Analyzer"]
+        Sports["Sports Analyzers"]
+        Risk["Injury Risk Engine"]
+        AI["AI Provider"]
+        Game["Gamification"]
+        DB[(SQLite/PostgreSQL)]
+    end
+    
+    Webcam --> MediaPipe
+    MediaPipe --> Canvas
+    MediaPipe --> API
+    API --> Fitness
+    API --> Sports
+    API --> Risk
+    API --> AI
+    API --> Game
+    API --> DB
+    Voice --> API
+    
+    AI --> Ollama["Ollama Local"]
+    AI -.->|Fallback| Gemini["Gemini Cloud"]
+```
+
+## Core AI Pipeline
 
 ```
-SENSE ──► PREDICT ──► OPTIMIZE ──► ASSIST ──► MONITOR
-  │          │            │           │          │
-Webcam   Kinematics   Ollama AI    Real-time   Dashboard
-33 Pose  Form & Risk  4-Wk Plan   Audio/HUD   XP & Radar
+Webcam Video
+    ↓
+MediaPipe Pose Estimation
+    ↓
+33 Body Landmarks (x, y, z, visibility)
+    ↓
+Joint Angle Calculation
+    ↓
+Exercise State Machine
+    ↓
+Rep Detection & Quality Check
+    ↓
+Form Score (0-100)
+    ↓
+Movement-Risk Analysis
+    ↓
+AI Coaching Insight
+    ↓
+Feedback Display
 ```
 
-1. **🎥 SENSE**: Webcam stream → MediaPipe Pose → 33 body landmark 3D coordinates at 30 FPS.
-2. **🧠 PREDICT**: Deterministic biomechanical engine calculates joint angles, movement symmetry, center-of-mass stability, fatigue form drift, and proactive movement-risk indicators.
-3. **⚡ OPTIMIZE**: Local privacy-first **Ollama AI** (with **Gemini Cloud fallback**) synthesizes 4-week position-specific athletic regimens and Indian nutritional plans.
-4. **🗣️ ASSIST**: Real-time visual HUD overlays with glowing skeleton rendering + bilingual (Hindi + English) Voice Coach feedback.
-5. **📊 MONITOR**: Unified athlete dashboard with Chart.js kinematic radars, quality-rep XP gamification, and injury risk trends.
+## AI Architecture
 
----
+### Why Both Ollama and Gemini?
 
-## 🏆 Key Features & Innovations
+**Ollama (Primary):**
+- Local inference on user's machine
+- Privacy: video frames never leave the device
+- Offline capability when internet unavailable
+- Lower recurring API costs
+- Suitable for privacy-conscious users
 
-### 1. 🏋️ Core Fitness Tracking
-* **Push-ups**: 90° elbow depth check, straight-line body alignment (shoulder-hip-ankle), and symmetry.
-* **Squats**: Thigh parallel depth (80°–100°), knee-over-toe alignment, and torso lean penalty.
-* **Lunges**: 90° front knee flexion, back-knee clearance, and upright spine stability.
-* **Planks**: Hold duration timer, core sag/arch detection, and micro-wobble stability score.
-* **Jumping Jacks**: Overhead arm reach (>150°) and leg spread cadence validation.
-* **Quality Rep Gating**: Only repetitions satisfying strict biomechanical criteria increment the quality counter.
+**Gemini (Fallback):**
+- Cloud-based when Ollama not installed
+- Stronger general-purpose responses
+- Availability when local model isn't running
+- Backup for users without local GPU/CPU resources
 
-### 2. ⚽ Football Intelligence Center
-* **Shooting Biomechanics**: Plant foot placement, knee flexion, hip power rotation, torso backward lean check, and kicking follow-through arc. Score: `/100`.
-* **Pose-Based Dribbling & Agility**: Center of mass shifts, rapid directional pivots, and low-center-of-gravity index (clearly labeled as *Pose-Based Analysis*).
-* **Player-Style Inspired Coaching**: Select technical philosophies like *Lionel Messi-inspired close-control principles* or *Explosive Winger mechanics*.
+**Flow:**
+1. Try Ollama first (local, private)
+2. If unavailable/error, fall back to Gemini
+3. If both unavailable, provide safe fallback message
+4. No video frames ever uploaded to cloud (only structured metrics)
 
-### 3. 🏏 Cricket Biomechanics Center
-* **Pull Shot Analysis**: Back-foot weight transfer, hip axis rotation, shoulder line, head stillness, and high follow-through.
-* **Cover Drive (with Kohli Mode)**: Front-foot stride commitment, head-over-ball alignment, front knee flexion, and balanced follow-through.
-* **Straight Drive**: Vertical bat presentation and balanced high front-elbow drive.
-* **Batting Stance Readiness**: Base width, relaxed knee flexion, side-on shoulder alignment.
-* **Bowling Biomechanics & Safety**: Run-up posture, front-arm pull, front-leg brace stability (>160°), and lower-back lumbar safety monitoring.
+## Technology Stack
 
-### 4. 🛡️ Signature Movement-Risk Engine
-* Proactively identifies movement-risk indicators (joint-angle deviation, left/right asymmetry, excessive range of motion, fatigue-related form deterioration).
-* Outputs: `Low Risk`, `Moderate Risk`, `High Risk`.
-* **Honest Safety Philosophy**: Always displays athletic guidance with disclaimer: *"This is a movement-risk indicator, not a medical diagnosis."*
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Frontend** | HTML5, JavaScript, Bootstrap 5.3 | Responsive UI |
+| **Computer Vision** | MediaPipe Pose (JavaScript) | 33-point pose detection |
+| **Backend** | Flask 3.1.1 | Web framework |
+| **Database** | SQLAlchemy 2.0 (SQLite/PostgreSQL) | Data persistence |
+| **Authentication** | Flask-Login 0.6.3 | User sessions |
+| **AI - Local** | Ollama (gemma3:4b) | Privacy-first inference |
+| **AI - Cloud** | Google Gemini 2.0 Flash | Fallback AI |
+| **Math/Analysis** | NumPy 1.26.4 | Biomechanical calculations |
+| **Video Processing** | OpenCV 4.10.0 | Image handling |
+| **Visualization** | Chart.js | Dashboard analytics |
+| **Voice** | Web Speech API | Bilingual voice coach |
 
-### 5. 🎙️ Bilingual Voice Coach (Hindi + English)
-* Spoken voice interaction in natural Hindi, Hinglish, or English (e.g., *"Mera pull shot kaisa tha?"*).
-* Instant audio response with SpeechSynthesis and actionable tactical advice.
-
-### 6. 🔒 Privacy-First AI Architecture
-* **Primary Engine**: Local [Ollama](https://ollama.com) (`gemma3:4b` or any installed local LLM).
-* **Cloud Fallback**: Google Gemini 2.0 Flash API (used only when Ollama is unavailable).
-* **Zero Frame Uploads to Cloud**: Video frames are processed strictly locally via MediaPipe and deterministic Python kinematics.
-
----
-
-## 📂 Project Architecture
-
-```
-KinesisFX/
-├── app.py                      # Flask application factory
-├── run.py                      # Server entry point
-├── routes.py                   # Core auth, fitness & dashboard routes
-├── sports_routes.py            # Football & cricket training routes
-├── api_routes.py               # Real-time pose analysis & REST endpoints
-├── models.py                   # SQLAlchemy database schema (PostgreSQL ready)
-├── pose_detection.py           # MediaPipe Pose & biomechanical calculations
-├── injury_risk_engine.py       # Proactive movement-risk detection
-├── sports_tracker.py           # Live sports session management
-├── football_analyzer.py        # Football technique kinematic engine
-├── cricket_analyzer.py         # Cricket shot & bowling kinematic engine
-├── sports_drills.py            # Athletic agility & reaction drills
-├── sports_scoring.py           # Unified /100 scoring engine
-├── gamification.py             # XP calculation, levels & badge unlocks
-├── ai_provider.py              # Ollama-first, Gemini-fallback abstraction
-├── ollama_service.py           # Local Ollama client
-├── gemini.py                   # Google Gemini fallback client
-├── diet_service.py             # BMR/TDEE & Indian nutrition planner
-├── yoga_service.py             # Asana posture alignment analyzer
-├── voice_service.py            # Bilingual Hindi/English voice coach
-├── google_fit_service.py       # Health & wearable sync service
-├── requirements.txt            # Python dependencies
-├── templates/                  # Modern responsive Jinja2 templates
-└── static/                     # Cyber-glow CSS & MediaPipe JS pipelines
-```
-
----
-
-## 🚀 Quickstart Guide
+## Installation
 
 ### Prerequisites
-* Python 3.10 – 3.12
-* Webcam (built-in or USB)
-* *(Optional)* [Ollama](https://ollama.com) installed with `gemma3:4b` or `mistral`
+- Python 3.10 – 3.12
+- Webcam (built-in or USB)
+- Modern browser (Chrome/Edge recommended)
+- *(Optional)* Ollama for local AI
 
-### 1. Clone & Install Dependencies
+### Windows Setup
+
+1. **Clone the repository:**
 ```bash
-git clone https://github.com/INOVE8/Kinesis-AI.git
-cd Kinesis-AI
+git clone https://github.com/Divyansh0208/Kinesis_AI.git
+cd Kinesis_AI
+```
+
+2. **Create virtual environment:**
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+3. **Install dependencies:**
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
-Create `.env` (or copy `.env.example`):
+4. **Configure environment variables:**
+```bash
+copy .env.example .env
+```
+
+Edit `.env` with your settings:
 ```env
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=gemma3:4b
 GOOGLE_API_KEY=your_gemini_api_key_here
-SESSION_SECRET=kinesis-secret-key-change-me
+SESSION_SECRET=change-this-to-a-random-secret-key
 DATABASE_URL=sqlite:///kinesis.db
 ```
 
-### 3. Launch Application
+5. **(Optional) Install Ollama for local AI:**
+   - Download from https://ollama.com/download
+   - Run: `ollama pull gemma3:4b`
+
+## Running the Application
+
 ```bash
 python run.py
 ```
-Open **`http://localhost:5000`** in Google Chrome or Microsoft Edge.
+
+Open http://localhost:5000 in your browser.
+
+## Demo Workflow for Judges
+
+### Quick Test (5 minutes)
+
+1. **Register:** Create an account at `/register`
+2. **Select Exercise:** Go to `/workout` and choose "Push-up"
+3. **Calibrate:** Stand in front of camera, click "Start Camera"
+4. **Perform:** Do 3-5 push-ups with good form
+5. **Observe:** Watch real-time form score and rep counting
+6. **Complete:** Click "Finish Session" to see results and XP earned
+
+### Full Demo (10-15 minutes)
+
+1. **Fitness Demo:** Try push-ups, squats, or lunges
+2. **Sports Demo:** Test football shooting or cricket pull shot
+3. **Yoga Demo:** Try Warrior II or Tree Pose
+4. **Voice Coach:** Ask "How was my form?" in voice section
+5. **Dashboard:** View workout history and progress charts
+6. **AI Features:** Generate a training plan (requires Ollama or Gemini API key)
+
+See [docs/JUDGE_DEMO.md](docs/JUDGE_DEMO.md) for detailed step-by-step instructions.
+
+## Performance
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| Pose Detection FPS | 25-30 FPS | ✅ Achieved (client-side) |
+| Analysis Latency | <50ms | ✅ Achieved (local processing) |
+| Form Detection Accuracy | To be benchmarked | 📊 Needs labeled dataset |
+| API Response Time | <200ms | ✅ Achieved |
+| AI Response Time | 2-5s (Ollama) | ⚠️ Hardware dependent |
+
+See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for detailed benchmarks.
+
+## Testing
+
+Run the automated test suite:
+
+```bash
+python test_suite.py
+```
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing strategy.
+
+## Security
+
+- Passwords hashed with Werkzeug
+- Session management via Flask-Login
+- Environment variables for sensitive data
+- SQL injection protection via SQLAlchemy
+- No video frames uploaded to cloud
+- API keys never exposed to client
+
+See [docs/SECURITY.md](docs/SECURITY.md) for security details.
+
+## Deployment
+
+### Development
+```bash
+python run.py
+```
+- SQLite database
+- Debug mode enabled
+- Hot reloading
+
+### Production
+```bash
+gunicorn -w 4 -b 0.0.0.0:5000 app:create_app()
+```
+- PostgreSQL database
+- Gunicorn WSGI server
+- Environment variables configured
+- Logging and monitoring
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment guide.
+
+## Scalability
+
+**Current Architecture:**
+- Single Flask instance
+- SQLite database
+- Client-side pose processing
+
+**Production Architecture:**
+- Load balancer → Multiple Flask instances
+- PostgreSQL with connection pooling
+- Redis for session caching (optional)
+- Separate AI worker processes
+- Horizontal scaling support
+
+See [docs/SCALABILITY.md](docs/SCALABILITY.md) for scaling strategy.
+
+## Cost Analysis
+
+### Prototype (Development)
+- Hosting: Local machine (free)
+- Database: SQLite (free)
+- AI: Ollama local (free)
+- **Total: $0/month**
+
+### Production (Estimated)
+- Hosting: $10-50/month (depending on scale)
+- Database: $15-100/month (PostgreSQL managed)
+- AI: $0-50/month (Ollama local) or $20-100/month (Gemini API)
+- **Total: $25-200/month**
+
+See [docs/COST_ANALYSIS.md](docs/COST_ANALYSIS.md) for detailed cost breakdown.
+
+## Future Enhancements
+
+- **Advanced Sports Analysis:** Ball tracking, multi-person analysis
+- **Mobile App:** React Native or Flutter application
+- **Institutional Dashboard:** Coach/team management interface
+- **Wearable Integration:** Enhanced Google Fit / Apple Health sync
+- **Additional Exercises:** Deadlifts, burpees, Olympic lifts
+- **Accessibility Modes:** Sign language coaching, screen reader support
+- **Multi-Language:** Expansion beyond Hindi/English
+
+## SIH Relevance
+
+Kinesis AI addresses the Smart India Hackathon 2026 Fitness & Sports theme by:
+
+1. **Promoting Digital India:** AI-powered coaching accessible via any device with a camera
+2. **Grassroots Sports Development:** Technical coaching for cricket and football without expensive equipment
+3. **Injury Prevention:** Movement-risk awareness for athletes and fitness enthusiasts
+4. **Privacy-First AI:** Local inference respects user privacy (Atmanirbhar Bharat initiative)
+5. **Bilingual Support:** Hindi/English coaching for pan-India accessibility
+6. **Affordability:** No specialized hardware needed—works with smartphones and laptops
+
+## Team
+
+**Team INOVE8**
+- Theme: Fitness & Sports
+- Problem Statement ID: 26196
+- Organization: Ministry of Education's Innovation Cell (MIC) / AICTE
+
+## License
+
+[License to be added]
+
+## Acknowledgments
+
+- MediaPipe by Google for pose estimation
+- Ollama for local AI inference
+- Google Gemini for cloud AI fallback
+- Flask and Python community
 
 ---
 
-## 📊 SIH 2026 Team Credentials
-
-* **Theme**: Fitness & Sports
-* **Problem Statement ID**: 26196
-* **Organization**: Ministry of Education's Innovation Cell (MIC) / AICTE
-* **Team**: INOVE8
-* **Lead AI & Full-Stack Engineer**: INOVE8 Core Team
+**Note:** This system provides movement-risk indicators and athletic guidance. It is not a medical device. Always consult qualified healthcare professionals for medical advice, injury diagnosis, or treatment.
